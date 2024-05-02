@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "io.h": "c",
+        "stdint.h": "c"
+    }
+}

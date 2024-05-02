@@ -6,6 +6,9 @@
 #include "button.h"
 #include "usart.h"
 
+#include <stdlib.h> // Voor srand en rand
+#include "led.h"    // Voor playPuzzle
+
 #define BUTTON_PIN PCINT1
 #define LED1 0
 #define LED2 1
@@ -104,7 +107,31 @@ void startGame() {
     generatePuzzle(puzzle, 10);
     printf("Het gegenereerde patroon is: ");
     printPuzzle(puzzle, 10);
+}
 
+void playPuzzle(uint8_t puzzle[], int length) {
+    for (int i = 0; i < length; i++) {
+        switch (puzzle[i]) {
+            case 0:
+                lightUpLed(LED1);
+                _delay_ms(DELAY);
+                lightDownLed(LED1);
+                break;
+            case 1:
+                lightUpLed(LED2);
+                _delay_ms(DELAY);
+                lightDownLed(LED2);
+                break;
+            case 2:
+                lightUpLed(LED3);
+                _delay_ms(DELAY);
+                lightDownLed(LED3);
+                break;
+            default:
+                break;
+        }
+        _delay_ms(DELAY);
+    }
 }
 
 

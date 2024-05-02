@@ -125,18 +125,23 @@ int main(void) {
     printf("Druk op knop1 om het spel te starten\n");
 
     while (1) {
-        if (!button_pushed) {
+        if (button_pushed) {
+            lightDownLed(LED4);
+            initRandomGenerator();
+            startGame();
+            button_pushed = 0;
+
+            uint8_t puzzle[10];  // Aangepaste grootte naar wens
+            generatePuzzle(puzzle, sizeof(puzzle) / sizeof(puzzle[0]));
+            playPuzzle(puzzle, sizeof(puzzle) / sizeof(puzzle[0]));
+
+            break;  // Dit beëindigt de lus na het spelen van het spel
+        } else {
             lightUpLed(LED4);
             _delay_ms(300);
             lightDownLed(LED4);
             _delay_ms(300);
             tellerLed4++;
-        } else {
-            lightDownLed(LED4);
-            initRandomGenerator();
-            startGame();
-            button_pushed = 0;
-            break;
         }
     }
 

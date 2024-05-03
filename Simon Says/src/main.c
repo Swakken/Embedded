@@ -11,6 +11,7 @@
 #define LED2 1
 #define LED3 2
 #define LED4 3
+
 #define DELAY 500
 
 #define BUTTON_PIN PCINT1
@@ -59,12 +60,22 @@ void printPuzzle(uint8_t puzzle[], int length) {
     printf("]\n");
 }
 
-void flashLed(int led) {
-    lightUpLed(led);
-    _delay_ms(DELAY_MS);
-    lightDownLed(led);
-    _delay_ms(DELAY_MS);
+void flashLed(int num_leds) {
+    for (int i = 0; i < num_leds; i++) {
+        if (i == 0) {
+            continue; // Overslaan van LED1
+        } else if (i == 1) {
+            lightUpLed(LED2);
+        } else if (i == 2) {
+            lightUpLed(LED3);
+        } else if (i == 3) {
+            lightUpLed(LED4);
+        }
+        _delay_ms(DELAY_MS);
+    }
+    lightDownAllLeds(); // Schakel alle LED's uit nadat alle LED's zijn getoond
 }
+
 
 int readButton() {
     if (buttonPushed(BUTTON_PIN)) {
@@ -76,7 +87,6 @@ int readButton() {
     }
     return -1;  // Geen knop ingedrukt
 }
-
 
 
 // Functie die het Simon Says spel leidt
@@ -91,15 +101,15 @@ void playSimonSays() {
 
         // Maak een willekeurige sequentie voor het huidige level
         for (int i = 0; i < level; i++) {
-            sequence[i] = rand() % LED_COUNT;
-            flashLed(sequence[i]);
+            sequence[i] = rand() % 3;
+            flashLed(i + 1);
         }
 
         // Vraag de gebruiker om de sequentie na te bootsen
         for (int i = 0; i < level; i++) {
-            userButton = readButton();
+            userButton = readButton(sequence[i]);
             while (userButton == -1) { // Polling tot een knop wordt ingedrukt
-                userButton = readButton();
+                userButton = readButton(sequence[i]);
                 _delay_ms(BUTTON_PRESS_DELAY); // Kleine vertraging om debouncing en overvragen te vermijden
             }
 
@@ -109,6 +119,7 @@ void playSimonSays() {
                 break;
             }
         }
+
 
         if (success && level == MAX_LEVEL) {
             printf("Gefeliciteerd! Je hebt het spel voltooid en bent de Simon Says Master!\n");

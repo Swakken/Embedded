@@ -44,7 +44,7 @@ int getRandomNumber() {
 // Functie om een patroon te genereren
 void generatePuzzle(uint8_t puzzle[], int length) {
     for (int i = 0; i < length; i++) {
-        puzzle[i] = getRandomNumber(); // Vul de puzzel met random getallen tussen 0 en 2
+        puzzle[i] = getRandomNumber();
     }
 }
 
@@ -73,17 +73,19 @@ void flashLed(int num_leds) {
         }
         _delay_ms(DELAY_MS);
     }
-    lightDownAllLeds(); // Schakel alle LED's uit nadat alle LED's zijn getoond
+    lightDownAllLeds();
 }
 
 int readButton() {
     if (buttonPushed(BUTTON_PIN)) {
+        return BUTTON_PIN; 
     } else if (buttonPushed(BUTTON_PIN2)) {
+        return BUTTON_PIN2; 
     } else if (buttonPushed(BUTTON_PIN3)) {
+        return BUTTON_PIN3;
     }
-    return -1;  // Geen knop ingedrukt
+    return -1;
 }
-
 
 
 // Functie die het Simon Says spel leidt
@@ -93,10 +95,9 @@ void playSimonSays() {
     int userButton;
 
     while (level <= MAX_LEVEL && success) {
-        int sequence[MAX_LEVEL]; // Maximaal 10 stappen in het spel
+        int sequence[MAX_LEVEL];
         printf("Level %d: volg de LEDs\n", level);
 
-        // Maak een willekeurige sequentie voor het huidige level
         for (int i = 0; i < level; i++) {
             sequence[i] = rand() % 3;
             flashLed(i + 1);

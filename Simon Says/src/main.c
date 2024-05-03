@@ -2,14 +2,15 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include <stdio.h>
-#include "led.h"
-#include "button.h"
+#include <button.h>
 #include "usart.h"
+#include <led.h>
 
-#include <stdlib.h> // Voor srand en rand
-#include "led.h"    // Voor playPuzzle
 
 #define BUTTON_PIN PCINT1
+#define BUTTON_PIN2 PCINT2
+#define BUTTON_PIN3 PCINT3
+
 #define LED1 0
 #define LED2 1
 #define LED3 2
@@ -20,18 +21,18 @@
 #define BUTTON2 1
 #define BUTTON3 2
 
-volatile int button_pushed = 0;
+volatile int not_started = 1;
 
 ISR(PCINT1_vect) {
     if (buttonPushed(BUTTON_PIN)) {
-        button_pushed = 1;
+        not_started = 0;
     }
 }
 
-int tellerLed4 = 0;
+int seedTellerLed4 = 0;
 
 void initRandomGenerator() {
-    srand(tellerLed4);
+    srand(seedTellerLed4);
 }
 
 int getRandomNumber() {
@@ -59,80 +60,34 @@ void printPuzzle(uint8_t puzzle[], int length) {
     printf("]\n");
 }
 
-// Functie om gebruikersinput te lezen en te verifiëren
-int readInput(uint8_t puzzle[], int length) {
-    int i = 0;
-    while (i < length) {
-        if (button_pushed) {
-            if (buttonPushed(BUTTON1)) {
-                printf("Je drukte op knop 1, ");
-                if (puzzle[i] != 0) {
-                    printf("fout!\n");
-                    return 0; // Gebruiker maakte een fout
-                }
-                printf("correct!\n");
-                i++; // Ga naar het volgende item in de puzzel
-                _delay_ms(300); // Debounce delay
-            } else if (buttonPushed(BUTTON2)) {
-                printf("Je drukte op knop 2, ");
-                if (puzzle[i] != 1) {
-                    printf("fout!\n");
-                    return 0; // Gebruiker maakte een fout
-                }
-                printf("correct!\n");
-                i++; // Ga naar het volgende item in de puzzel
-                _delay_ms(300); // Debounce delay
-            } else if (buttonPushed(BUTTON3)) {
-                printf("Je drukte op knop 3, ");
-                if (puzzle[i] != 2) {
-                    printf("fout!\n");
-                    return 0; // Gebruiker maakte een fout
-                }
-                printf("correct!\n");
-                i++; // Ga naar het volgende item in de puzzel
-                _delay_ms(300); // Debounce delay
-            }
-            button_pushed = 0; // Reset button_pushed
-        }
-    }
-    return 1; // Gebruiker heeft de hele reeks correct ingevoerd
-}
 
 // Functie om het spel te starten
 void startGame() {
-    printf("Het spel is gestart!\n");
-    printf("De waarde van tellerLed4 is: %d\n", tellerLed4);
-    
-    uint8_t puzzle[10];
-    generatePuzzle(puzzle, 10);
-    printf("Het gegenereerde patroon is: ");
-    printPuzzle(puzzle, 10);
+        printf("Druk op knop1 om het spel te starten\n");
+        
+        while (not_started) {
+            lightUpLed(LED4);
+            _delay_ms(300);
+            lightDownLed(LED4);
+            _delay_ms(300);
+            seedTellerLed4++;
+        }
+
+            lightDownLed(LED4);
+            initRandomGenerator();
+
+            printf("Het spel is gestart!\n");
+            printf("De waarde van seedTellerLed4 is: %d\n", seedTellerLed4);
+
+            uint8_t puzzle[10];
+            generatePuzzle(puzzle, 10);
+            printf("Het gegenereerde patroon is: ");
+            printPuzzle(puzzle, 10);
+
+            cli();
 }
 
-void playPuzzle(uint8_t puzzle[], int length) {
-    for (int i = 0; i < length; i++) {
-        switch (puzzle[i]) {
-            case 0:
-                lightUpLed(LED1);
-                _delay_ms(DELAY);
-                lightDownLed(LED1);
-                break;
-            case 1:
-                lightUpLed(LED2);
-                _delay_ms(DELAY);
-                lightDownLed(LED2);
-                break;
-            case 2:
-                lightUpLed(LED3);
-                _delay_ms(DELAY);
-                lightDownLed(LED3);
-                break;
-            default:
-                break;
-        }
-        _delay_ms(DELAY);
-    }
-}
+
 
 
 int main(void) {
@@ -149,30 +104,9 @@ int main(void) {
 
     sei();
 
-    printf("Druk op knop1 om het spel te starten\n");
+    startGame();
 
-    while (1) {
-        if (button_pushed) {
-            lightDownLed(LED4);
-            initRandomGenerator();
-            startGame();
-            button_pushed = 0;
-
-            uint8_t puzzle[10];  // Aangepaste grootte naar wens
-            generatePuzzle(puzzle, sizeof(puzzle) / sizeof(puzzle[0]));
-            playPuzzle(puzzle, sizeof(puzzle) / sizeof(puzzle[0]));
-
-            break;  // Dit beëindigt de lus na het spelen van het spel
-        } else {
-            lightUpLed(LED4);
-            _delay_ms(300);
-            lightDownLed(LED4);
-            _delay_ms(300);
-            tellerLed4++;
-        }
-    }
-
-    
+   
 
 /*
     initRandomGenerator(); 
@@ -186,7 +120,7 @@ int main(void) {
 
 
 
-    // Maak een functie die gebruik maakt van de waarde van tellerLed4 als voor de randomgenerator.
+    // Maak een functie die gebruik maakt van de waarde van seedTellerLed4 als voor de randomgenerator.
     // Werk dit uit en test door een reeks van 10 random getallen naar de Serial Monitor te sturen. 
     // Check of je reeks inderdaad steeds andere waardes krijgt...
 

@@ -5,11 +5,7 @@
 #include <button.h>
 #include "usart.h"
 #include <led.h>
-
-
-#define BUTTON_PIN PCINT1
-#define BUTTON_PIN2 PCINT2
-#define BUTTON_PIN3 PCINT3
+#include <stdlib.h>
 
 #define LED1 0
 #define LED2 1
@@ -17,9 +13,14 @@
 #define LED4 3
 #define DELAY 500
 
-#define BUTTON1 0
-#define BUTTON2 1
-#define BUTTON3 2
+#define BUTTON_PIN PCINT1
+#define BUTTON_PIN2 PCINT2
+#define BUTTON_PIN3 PCINT3
+
+#define LED_COUNT 3
+#define MAX_LEVEL 10
+#define DELAY_MS 500
+#define BUTTON_PRESS_DELAY 200
 
 volatile int not_started = 1;
 
@@ -39,8 +40,6 @@ int getRandomNumber() {
     return rand() % 3; 
 }
 
-
-
 // Functie om een patroon te genereren
 void generatePuzzle(uint8_t puzzle[], int length) {
     for (int i = 0; i < length; i++) {
@@ -58,6 +57,65 @@ void printPuzzle(uint8_t puzzle[], int length) {
         }
     }
     printf("]\n");
+}
+
+void flashLed(int led) {
+    lightUpLed(led);
+    _delay_ms(DELAY_MS);
+    lightDownLed(led);
+    _delay_ms(DELAY_MS);
+}
+
+int readButton() {
+    if (buttonPushed(BUTTON_PIN)) {
+        return BUTTON_PIN;
+    } else if (buttonPushed(BUTTON_PIN2)) {
+        return BUTTON_PIN2;
+    } else if (buttonPushed(BUTTON_PIN3)) {
+        return BUTTON_PIN3;
+    }
+    return -1;  // Geen knop ingedrukt
+}
+
+
+
+// Functie die het Simon Says spel leidt
+void playSimonSays() {
+    int level = 1;
+    int success = 1;
+    int userButton;
+
+    while (level <= MAX_LEVEL && success) {
+        int sequence[MAX_LEVEL]; // Maximaal 10 stappen in het spel
+        printf("Level %d: volg de LEDs\n", level);
+
+        // Maak een willekeurige sequentie voor het huidige level
+        for (int i = 0; i < level; i++) {
+            sequence[i] = rand() % LED_COUNT;
+            flashLed(sequence[i]);
+        }
+
+        // Vraag de gebruiker om de sequentie na te bootsen
+        for (int i = 0; i < level; i++) {
+            userButton = readButton();
+            while (userButton == -1) { // Polling tot een knop wordt ingedrukt
+                userButton = readButton();
+                _delay_ms(BUTTON_PRESS_DELAY); // Kleine vertraging om debouncing en overvragen te vermijden
+            }
+
+            if (userButton != sequence[i]) {
+                success = 0; // De gebruiker heeft een fout gemaakt
+                printf("Fout gemaakt! Spel is over bij level %d.\n", level);
+                break;
+            }
+        }
+
+        if (success && level == MAX_LEVEL) {
+            printf("Gefeliciteerd! Je hebt het spel voltooid en bent de Simon Says Master!\n");
+        }
+
+        level++; // Ga naar het volgende level
+    }
 }
 
 
@@ -83,11 +141,10 @@ void startGame() {
             generatePuzzle(puzzle, 10);
             printf("Het gegenereerde patroon is: ");
             printPuzzle(puzzle, 10);
+            _delay_ms(250);
 
             cli();
 }
-
-
 
 
 int main(void) {
@@ -97,25 +154,18 @@ int main(void) {
     lightUpLed(LED4);
 
     enableButton(BUTTON_PIN);
+    enableButton(BUTTON_PIN2); // Zorg dat je ook de andere knoppen activeert.
+    enableButton(BUTTON_PIN3);
 
     // Knoppen initialiseren
     PCICR |= _BV(PCIE1);
-    PCMSK1 |= _BV(BUTTON_PIN);
+    PCMSK1 |= _BV(BUTTON_PIN) | _BV(BUTTON_PIN2) | _BV(BUTTON_PIN3); // Activeer interrupts voor alle knoppen als ze nog steeds nodig zijn.
 
     sei();
 
     startGame();
 
-   
-
-/*
-    initRandomGenerator(); 
-    for (int i = 0; i < 10; i++) {
-        int randomNumber = getRandomNumber();
-        printf("Random getal %d: %d\n", i + 1, randomNumber);
-    }
-*/
-
+    playSimonSays(); // Start het Simon Says spel.
 
 
 

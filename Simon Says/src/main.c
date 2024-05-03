@@ -76,17 +76,14 @@ void flashLed(int num_leds) {
     lightDownAllLeds(); // Schakel alle LED's uit nadat alle LED's zijn getoond
 }
 
-
 int readButton() {
     if (buttonPushed(BUTTON_PIN)) {
-        return BUTTON_PIN;
     } else if (buttonPushed(BUTTON_PIN2)) {
-        return BUTTON_PIN2;
     } else if (buttonPushed(BUTTON_PIN3)) {
-        return BUTTON_PIN3;
     }
     return -1;  // Geen knop ingedrukt
 }
+
 
 
 // Functie die het Simon Says spel leidt
@@ -165,7 +162,7 @@ int main(void) {
     lightUpLed(LED4);
 
     enableButton(BUTTON_PIN);
-    enableButton(BUTTON_PIN2); // Zorg dat je ook de andere knoppen activeert.
+    enableButton(BUTTON_PIN2); 
     enableButton(BUTTON_PIN3);
 
     // Knoppen initialiseren

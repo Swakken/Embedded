@@ -109,5 +109,3 @@ void writeNumberAndWait(int number, int delay) {
     _delay_ms(5);
   }
 }
-
-

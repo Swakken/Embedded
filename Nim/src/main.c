@@ -2,6 +2,60 @@
 #include <util/delay.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <usart.h>
+#include <pot.h>
+#include "display.h"
+#include <button.h>
+
+#define BUTTON_PIN PCINT1
+
+void initButton() {
+    DDRC &= ~(1 << BUTTON_PIN);
+    PORTC |= (1 << BUTTON_PIN);
+}
+
+int buttonPressed() {
+    return (PINC & (1 << BUTTON_PIN)) == 0;
+}
+
+int main() {
+    initUSART();
+    startPotentiometer();
+    initDisplay(); 
+    initButton();
+
+    uint16_t value = 0;
+    unsigned int seed = 0;
+
+    printf("Draai aan de potentiometer om de seed te kiezen en druk op de knop om te starten.\n");
+
+    while (!buttonPressed()) {
+        value = readPotentiometer();
+        writeNumberAndWait(value % 10000, 200);
+    }
+
+    printf("Game seed: ");
+    _delay_ms(1000); // Wacht 1 seconde
+    seed = value % 10000;
+    printf("%u\n", seed);
+
+    srand(seed);
+    printf("Game started with seed: %u\n", seed);
+
+    // Start hier het spel...
+
+    return 0;
+}
+
+
+
+
+
+/*
+#include <avr/io.h>
+#include <util/delay.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "usart.h"
 #include "pot.h"
 #include "display.h"
@@ -26,6 +80,23 @@ void blinkLetter(char letter, int delayMs) {
     }
 }
 
+void persoon(int* startAantal, int maxAantal) {
+    printf("Speler's beurt. Kies het aantal lucifers om te nemen (1 tot %d):\n", maxAantal);
+    int gekozenAantal;
+    scanf("%d", &gekozenAantal);
+    if (gekozenAantal >= 1 && gekozenAantal <= maxAantal && gekozenAantal <= *startAantal) {
+        *startAantal -= gekozenAantal;
+    } else {
+        printf("Ongeldige invoer. Probeer opnieuw.\n");
+        persoon(startAantal, maxAantal); // Roep de functie opnieuw aan voor een nieuwe poging
+    }
+}
+
+void computer(int* startAantal, int maxAantal) {
+    int genomenAantal = rand() % maxAantal + 1; // Kies een willekeurig aantal lucifers
+    printf("De computer neemt %d lucifers.\n", genomenAantal);
+    *startAantal -= genomenAantal;
+}
 
 int main() {
     initUSART();
@@ -40,14 +111,18 @@ int main() {
 
     printf("Draai aan de potentiometer om de seed te kiezen en druk op de knop om te starten.\n");
 
+    // Wacht tot de gebruiker op de knop drukt
     while (!buttonPressed()) {
         value = readPotentiometer();
-        seed = value % 10000;
-        writeNumberAndWait(seed, 200);
+        writeNumber(value % 10000); // Toon de waarde van de potentiometer op het display
+        _delay_ms(200);
     }
 
-    srand(seed);
+    // Genereer de game seed nadat de gebruiker op de knop heeft gedrukt
+    srand(value % 10000);
+    seed = value % 10000;
     printf("Game started with seed: %u\n", seed);
+    writeNumber(seed); // Toon het seed op het display
 
     int currentPlayer = rand() % 2;  // 0 voor speler, 1 voor computer
     int displayStarter = currentPlayer + 1;  // '1' voor speler, '2' voor computer
@@ -60,23 +135,17 @@ int main() {
         _delay_ms(500);
     }
 
+    if (displayStarter == 1) {
+        writeNumber(maxAantal); // Toon maxAantal als de speler begint
+    }
+
     writeNumber(startAantal); // Toon startaantal lucifers
 
     while (startAantal > 0) {
         if (currentPlayer == 0) { // Speler's beurt
-            printf("Speler's beurt. Kies het aantal lucifers om te nemen (1 tot %d):\n", maxAantal);
-            int gekozenAantal;
-            scanf("%d", &gekozenAantal);
-            if (gekozenAantal >= 1 && gekozenAantal <= maxAantal && gekozenAantal <= startAantal) {
-                startAantal -= gekozenAantal;
-            } else {
-                printf("Ongeldige invoer. Probeer opnieuw.\n");
-                continue; // Overslaan naar volgende iteratie van de lus
-            }
+            persoon(&startAantal, maxAantal); // Roep de persoon functie aan
         } else { // Computer's beurt
-            int genomenAantal = rand() % maxAantal + 1; // Kies een willekeurig aantal lucifers
-            printf("De computer neemt %d lucifers.\n", genomenAantal);
-            startAantal -= genomenAantal;
+            computer(&startAantal, maxAantal); // Roep de computer functie aan
         }
 
         writeNumber(startAantal); // Update het aantal lucifers op het display
@@ -92,3 +161,6 @@ int main() {
 
     return 0;
 }
+
+
+*/

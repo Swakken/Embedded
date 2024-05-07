@@ -34,18 +34,29 @@ int main() {
         writeNumberAndWait(value % 10000, 200);
     }
 
-    printf("Game seed: ");
-    _delay_ms(1000); // Wacht 1 seconde
     seed = value % 10000;
-    printf("%u\n", seed);
-
     srand(seed);
     printf("Game started with seed: %u\n", seed);
 
-    // Start hier het spel...
+    int startAantal = 21;  // Voorbeeldwaarde
+    int maxAantal = (rand() % 3) + 1;  // Maximaal 1-3
+    int speler = rand() % 2;  // 0 voor 'C', 1 voor 'P'
+
+    while (1) {
+        writeNumberToSegment(2, startAantal / 10);  // Linker getal van startAantal
+        writeNumberToSegment(3, startAantal % 10);  // Rechter getal van startAantal
+
+        if (speler == 1) {  // Als 'P' aan de beurt is
+            writeCharToSegment(0, 'P');
+            writeNumberToSegment(1, maxAantal);  // Maximaal aantal naast 'P'
+        } else {
+            writeCharToSegment(0, 'C');  // 'C' alleen, zonder getal
+        }
+    }
 
     return 0;
 }
+
 
 
 

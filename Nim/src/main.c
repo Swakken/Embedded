@@ -38,19 +38,20 @@ int main() {
     srand(seed);
     printf("Game started with seed: %u\n", seed);
 
-    int startAantal = 21;  // Voorbeeldwaarde
-    int maxAantal = (rand() % 3) + 1;  // Maximaal 1-3
-    int speler = rand() % 2;  // 0 voor 'C', 1 voor 'P'
+    int startAantal = 21;
+    int maxAantal = (rand() % 3) + 1;
+    // 0 voor C en 1 voor P
+    int speler = rand() % 2;
 
     while (1) {
-        writeNumberToSegment(2, startAantal / 10);  // Linker getal van startAantal
-        writeNumberToSegment(3, startAantal % 10);  // Rechter getal van startAantal
+        writeNumberToSegment(2, startAantal / 10);
+        writeNumberToSegment(3, startAantal % 10);
 
-        if (speler == 1) {  // Als 'P' aan de beurt is
+        if (speler == 1) {
             writeCharToSegment(0, 'P');
-            writeNumberToSegment(1, maxAantal);  // Maximaal aantal naast 'P'
+            writeNumberToSegment(1, maxAantal);
         } else {
-            writeCharToSegment(0, 'C');  // 'C' alleen, zonder getal
+            writeCharToSegment(0, 'C');
         }
     }
 

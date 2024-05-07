@@ -8,6 +8,8 @@
 #include <button.h>
 
 #define BUTTON_PIN PCINT1
+#define BUTTON_VERHOOG PCINT2
+#define BUTTON_VERLAAG PCINT0
 
 void initButton() {
     DDRC &= ~(1 << BUTTON_PIN);

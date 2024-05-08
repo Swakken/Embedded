@@ -20,6 +20,32 @@ int buttonPressed() {
     return (PINC & (1 << BUTTON_PIN)) == 0;
 }
 
+void verhoogKeuze(int *value, int maxValue) {
+    if (buttonPressed(BUTTON_VERHOOG) && *value < maxValue) {
+        (*value)++;
+        writeNumberToSegment(1, *value);
+        _delay_ms(200);
+    }
+}
+
+void verlaagKeuze(int *value) {
+    if (buttonPressed(BUTTON_VERLAAG) && *value > 1) {
+        (*value)--;
+        writeNumberToSegment(1, *value);
+        _delay_ms(200);
+    }
+}
+
+void bevestigKeuze(int *total, int value) {
+    if (buttonPressed(BUTTON_PIN)) {
+        *total -= value;
+        writeNumberToSegment(2, *total / 10);
+        writeNumberToSegment(3, *total % 10);
+        _delay_ms(200);
+    }
+}
+
+
 int main() {
     initUSART();
     startPotentiometer();
@@ -42,6 +68,7 @@ int main() {
 
     int startAantal = 21;
     int maxAantal = (rand() % 3) + 1;
+    int aantalGekozen = 1;
     // 0 voor C en 1 voor P
     int speler = rand() % 2;
 
@@ -50,10 +77,12 @@ int main() {
         writeNumberToSegment(3, startAantal % 10);
 
         if (speler == 1) {
-            writeCharToSegment(0, 'P');
-            writeNumberToSegment(1, maxAantal);
+            writeCharToSegment(1, 'p');
+            writeNumberToSegment(0, maxAantal);
+//            printf("De beurt is bij de speler");
         } else {
-            writeCharToSegment(0, 'C');
+            writeCharToSegment(1, 'c');
+//            printf("De beurt is bij de computer");
         }
     }
 

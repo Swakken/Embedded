@@ -44,7 +44,7 @@ int getRandomNumber() {
 // Functie om een patroon te genereren
 void generatePuzzle(uint8_t puzzle[], int length) {
     for (int i = 0; i < length; i++) {
-        puzzle[i] = getRandomNumber();
+        puzzle[i] = rand() %3;
     }
 }
 
@@ -60,20 +60,56 @@ void printPuzzle(uint8_t puzzle[], int length) {
     printf("]\n");
 }
 
-void flashLed(int num_leds) {
-    for (int i = 0; i < num_leds; i++) {
-        if (i == 0) {
-            continue; // Overslaan van LED1
-        } else if (i == 1) {
-            lightUpLed(LED2);
-        } else if (i == 2) {
-            lightUpLed(LED3);
-        } else if (i == 3) {
-            lightUpLed(LED4);
-        }
-        _delay_ms(DELAY_MS);
+void playPuzzle(uint8_t puzzle[], int size) {
+
+    for (uint8_t i = 0; i < size; i++)
+    {
+         lightUpLed(puzzle[i]);
+         _delay_ms(DELAY);
+         lightDownLed(puzzle[i]);
+         _delay_ms(DELAY);
     }
-    lightDownAllLeds();
+}
+
+// Functie readInput
+uint8_t readInput(uint8_t puzzle[], int size) {
+    
+    int position = 0;
+
+    while (1)
+    {
+        for (uint8_t i = 0; i < 3; i++)
+        {
+            if (buttonPushed(i) && puzzle[position] != i)
+            {
+                _delay_ms(1000);
+
+                if (buttonPushed(i) && puzzle[position] != i)
+                {
+                    printf("Pushed button %d, Not correct!\n", i);
+                    return 0;
+                }
+            }
+        }
+        if (buttonPushed(puzzle[position]))
+        {
+            _delay_ms(1000);
+
+            if (buttonPushed(puzzle[position]))
+            {
+                    printf("Pushed button %d, correct!\n", puzzle[position]);
+                    position++;
+                    if (position == size) {
+                        return 1;
+                    }
+            }
+        }
+    }
+}
+
+// Functie om interrupts in te schakelen
+void enableInterrupts() {
+    sei();
 }
 
 int readButton() {
@@ -88,71 +124,43 @@ int readButton() {
 }
 
 
-// Functie die het Simon Says spel leidt
-void playSimonSays() {
-    int level = 1;
-    int success = 1;
-    int userButton;
-
-    while (level <= MAX_LEVEL && success) {
-        int sequence[MAX_LEVEL];
-        printf("Level %d: volg de LEDs\n", level);
-
-        for (int i = 0; i < level; i++) {
-            sequence[i] = rand() % 3;
-            flashLed(i + 1);
-        }
-
-        // Vraag de gebruiker om de sequentie na te bootsen
-        for (int i = 0; i < level; i++) {
-            userButton = readButton(sequence[i]);
-            while (userButton == -1) { // Polling tot een knop wordt ingedrukt
-                userButton = readButton(sequence[i]);
-                _delay_ms(BUTTON_PRESS_DELAY); // Kleine vertraging om debouncing en overvragen te vermijden
-            }
-
-            if (userButton != sequence[i]) {
-                success = 0; // De gebruiker heeft een fout gemaakt
-                printf("Fout gemaakt! Spel is over bij level %d.\n", level);
-                break;
-            }
-        }
-
-
-        if (success && level == MAX_LEVEL) {
-            printf("Gefeliciteerd! Je hebt het spel voltooid en bent de Simon Says Master!\n");
-        }
-
-        level++; // Ga naar het volgende level
-    }
-}
-
-
 // Functie om het spel te starten
 void startGame() {
-        printf("Druk op knop1 om het spel te starten\n");
-        
-        while (not_started) {
-            lightUpLed(LED4);
-            _delay_ms(300);
-            lightDownLed(LED4);
-            _delay_ms(300);
-            seedTellerLed4++;
-        }
+    printf("Druk op knop1 om het spel te starten\n");
+    
+    while (not_started) {
+        lightUpLed(LED4);
+        _delay_ms(300);
+        lightDownLed(LED4);
+        _delay_ms(300);
+        seedTellerLed4++;
+    }
 
-            lightDownLed(LED4);
-            initRandomGenerator();
+    lightDownLed(LED4);
+    initRandomGenerator();
 
-            printf("Het spel is gestart!\n");
-            printf("De waarde van seedTellerLed4 is: %d\n", seedTellerLed4);
+    printf("Het spel is gestart!\n");
+    printf("De waarde van seedTellerLed4 is: %d\n", seedTellerLed4);
 
-            uint8_t puzzle[10];
-            generatePuzzle(puzzle, 10);
-            printf("Het gegenereerde patroon is: ");
-            printPuzzle(puzzle, 10);
-            _delay_ms(250);
+    uint8_t puzzle[10];
+    generatePuzzle(puzzle, 10);
+    printf("Het gegenereerde patroon is: ");
+    printPuzzle(puzzle, 10);
+    _delay_ms(250);
 
-            cli();
+    // Laat de sequentie zien
+    for (int i = 0; i < 10; i++) {
+        playPuzzle(puzzle[i], 1);
+        _delay_ms(1000); // Een korte pauze tussen elke knipperende LED
+    }
+
+    // Lees de invoer van de speler en controleer of deze correct is
+    uint8_t success = readInput(puzzle, 10);
+    if (success) {
+        printf("Gefeliciteerd! Je hebt het patroon correct herhaald!\n");
+    } else {
+        printf("Helaas, je hebt een fout gemaakt en het patroon niet correct herhaald.\n");
+    }
 }
 
 
@@ -162,31 +170,19 @@ int main(void) {
     lightDownAllLeds();
     lightUpLed(LED4);
 
+    enableInterrupts();
+
     enableButton(BUTTON_PIN);
     enableButton(BUTTON_PIN2); 
     enableButton(BUTTON_PIN3);
 
     // Knoppen initialiseren
     PCICR |= _BV(PCIE1);
-    PCMSK1 |= _BV(BUTTON_PIN) | _BV(BUTTON_PIN2) | _BV(BUTTON_PIN3); // Activeer interrupts voor alle knoppen als ze nog steeds nodig zijn.
+    PCMSK1 |= _BV(BUTTON_PIN) | _BV(BUTTON_PIN2) | _BV(BUTTON_PIN3);
 
     sei();
 
     startGame();
-
-    playSimonSays(); // Start het Simon Says spel.
-
-
-
-
-    // Maak een functie die gebruik maakt van de waarde van seedTellerLed4 als voor de randomgenerator.
-    // Werk dit uit en test door een reeks van 10 random getallen naar de Serial Monitor te sturen. 
-    // Check of je reeks inderdaad steeds andere waardes krijgt...
-
-
-    while (1) {
-
-    }
 
     return 0;
 }

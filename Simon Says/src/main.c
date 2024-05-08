@@ -44,7 +44,7 @@ int getRandomNumber() {
 // Functie om een patroon te genereren
 void generatePuzzle(uint8_t puzzle[], int length) {
     for (int i = 0; i < length; i++) {
-        puzzle[i] = rand() %3;
+        puzzle[i] = getRandomNumber();
     }
 }
 
@@ -106,6 +106,8 @@ uint8_t readInput(uint8_t puzzle[], int size) {
         }
     }
 }
+
+
 
 // Functie om interrupts in te schakelen
 void enableInterrupts() {

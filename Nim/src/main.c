@@ -46,29 +46,29 @@ void bevestigKeuze(int *total, int value) {
 }
 
 void spelerBeurt(int *startAantal, int maxAantal) {
-    int gekozenAantal = 1; // Begin met het standaard aantal lucifers
+    int aantalGekozen = 1; // Begin met het standaard aantal lucifers
 
     // Blijf in de lus totdat de speler een geldig aantal lucifers kiest
     while (1) {
         // Toon het gekozen aantal lucifers op het display
-        writeNumberToSegment(1, gekozenAantal);
+        writeNumberToSegment(1, aantalGekozen);
 
         // Knop 3 verhoogt het gekozen aantal lucifers (niet hoger dan maxAantal)
-        if (buttonPressed(BUTTON_VERHOOG) && gekozenAantal < maxAantal) {
-            gekozenAantal++;
+        if (buttonPressed(BUTTON_VERHOOG) && aantalGekozen < maxAantal) {
+            aantalGekozen++;
             _delay_ms(200);
         }
 
         // Knop 1 verlaagt het gekozen aantal lucifers (niet lager dan 1)
-        if (buttonPressed(BUTTON_VERLAAG) && gekozenAantal > 1) {
-            gekozenAantal--;
+        if (buttonPressed(BUTTON_VERLAAG) && aantalGekozen > 1) {
+            aantalGekozen--;
             _delay_ms(200);
         }
 
         // Wacht op de bevestiging van de speler door op knop 2 te drukken
         if (buttonPressed(BUTTON_PIN)) {
             // Pas het aantal lucifers aan door het gekozen aantal weg te nemen
-            *startAantal -= gekozenAantal;
+            *startAantal -= aantalGekozen;
             // Toon het nieuwe aantal lucifers op het display
             writeNumberToSegment(2, *startAantal / 10);
             writeNumberToSegment(3, *startAantal % 10);
@@ -78,38 +78,45 @@ void spelerBeurt(int *startAantal, int maxAantal) {
     }
 }
 
-
-
 void computerBeurt(int *startAantal, int maxAantal) {
-    int genomenAantal;
+    int aantalGekozen;
 
     // Bereken het aantal lucifers dat de computer neemt volgens de strategie van Nim
     if ((*startAantal - 1) % (maxAantal + 1) == 0) {
         // Als de huidige situatie een winnende positie is voor de computer, neem één lucifer
-        genomenAantal = 1;
+        aantalGekozen = 1;
     } else {
         // Zo niet, neem een willekeurig aantal tussen 1 en maxAantal
-        genomenAantal = rand() % maxAantal + 1;
+        aantalGekozen = rand() % maxAantal + 1;
     }
 
     // Toon het aantal lucifers dat de computer neemt op het meest linkse display
-    writeNumberToSegment(0, genomenAantal);
+    writeNumberToSegment(0, aantalGekozen);
 
-    // Wacht op de bevestiging van de speler door op knop 2 te drukken
+    // Wacht op bevestiging van de speler door op knop 2 te drukken
+    while (!buttonPressed(BUTTON_PIN)) {
+        // Wacht tot de speler de bevestigingsknop indrukt
+    }
+
+    // Toon in de terminal dat het de beurt is van de computer
+    printf("De beurt is aan de computer.\n");
+
+    // Toon het aantal lucifers dat de computer heeft gekozen in de terminal
+    printf("De computer kiest %d lucifers.\n", aantalGekozen);
+
+    // Wacht opnieuw op bevestiging van de speler door op knop 2 te drukken
     while (!buttonPressed(BUTTON_PIN)) {
         // Wacht tot de speler de bevestigingsknop indrukt
     }
 
     // Pas het aantal lucifers aan door het genomen aantal weg te nemen
-    *startAantal -= genomenAantal;
+    *startAantal -= aantalGekozen;
 
     // Toon het nieuwe aantal lucifers op het display
     writeNumberToSegment(2, *startAantal / 10);
     writeNumberToSegment(3, *startAantal % 10);
     _delay_ms(200);
 }
-
-
 
 int main() {
     initUSART();
@@ -137,23 +144,27 @@ int main() {
     // 0 voor C en 1 voor P
     int speler = rand() % 2;
 
-    while (1) {
-        writeNumberToSegment(2, startAantal / 10);
-        writeNumberToSegment(3, startAantal % 10);
+    // Toon het startaantal en de letter die de beurt aangeeft op het display
+    writeNumberToSegment(2, startAantal / 10);
+    writeNumberToSegment(3, startAantal % 10);
+    if (speler == 1) {
+        writeCharToSegment(1, 'p');
+    } else {
+        writeCharToSegment(1, 'c');
+    }
 
+    while (1) {
         if (speler == 1) {
             writeCharToSegment(1, 'p');
             writeNumberToSegment(0, maxAantal);
-//            printf("De beurt is bij de speler");
+            spelerBeurt(&startAantal, maxAantal);
+            speler = 0; // Verander de beurt naar de computer na de speler's beurt
         } else {
             writeCharToSegment(1, 'c');
-//            printf("De beurt is bij de computer");
+            computerBeurt(&startAantal, maxAantal);
+            speler = 1; // Verander de beurt naar de speler na de computer's beurt
         }
     }
 
     return 0;
 }
-
-
-
-

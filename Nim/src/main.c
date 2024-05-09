@@ -156,13 +156,8 @@ int main() {
     while (1) {
         if (speler == 1) {
             writeCharToSegment(1, 'p');
-            writeNumberToSegment(0, maxAantal);
-            spelerBeurt(&startAantal, maxAantal);
-            speler = 0; // Verander de beurt naar de computer na de speler's beurt
         } else {
             writeCharToSegment(1, 'c');
-            computerBeurt(&startAantal, maxAantal);
-            speler = 1; // Verander de beurt naar de speler na de computer's beurt
         }
     }
 

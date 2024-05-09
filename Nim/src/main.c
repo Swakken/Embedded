@@ -155,9 +155,13 @@ int main() {
 
     while (1) {
         if (speler == 1) {
-            writeCharToSegment(1, 'p');
+        writeCharToSegment(1, 'p');
+        writeNumberToSegment(2, startAantal / 10);
+        writeNumberToSegment(3, startAantal % 10);
         } else {
             writeCharToSegment(1, 'c');
+            writeNumberToSegment(2, startAantal / 10);
+            writeNumberToSegment(3, startAantal % 10);
         }
     }
 

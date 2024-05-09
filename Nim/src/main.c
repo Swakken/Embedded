@@ -46,41 +46,38 @@ void bevestigKeuze(int *total, int value) {
 }
 
 void spelerBeurt(int *startAantal, int maxAantal) {
-    int gekozenAantal = 0;
-    
+    int gekozenAantal = 1; // Begin met het standaard aantal lucifers
+
     // Blijf in de lus totdat de speler een geldig aantal lucifers kiest
-    while (gekozenAantal < 1 || gekozenAantal > maxAantal || gekozenAantal > *startAantal) {
-        // Laat de speler het aantal lucifers kiezen om weg te nemen
-        // Implementeer de code om de spelerinput te verkrijgen, bijvoorbeeld door knoppen te gebruiken
-        
-        // Wacht tot de speler de keuze bevestigt door op de tweede knop te drukken
-        if (buttonPressed(BUTTON_VERHOOG)) {
-            // Verhoog het aantal lucifers dat de speler wil wegnemen
-            if (gekozenAantal < maxAantal) {
-                gekozenAantal++;
-                writeNumberToSegment(1, gekozenAantal);
-                _delay_ms(200);
-            }
+    while (1) {
+        // Toon het gekozen aantal lucifers op het display
+        writeNumberToSegment(1, gekozenAantal);
+
+        // Knop 3 verhoogt het gekozen aantal lucifers (niet hoger dan maxAantal)
+        if (buttonPressed(BUTTON_VERHOOG) && gekozenAantal < maxAantal) {
+            gekozenAantal++;
+            _delay_ms(200);
         }
-        
-        if (buttonPressed(BUTTON_VERLAAG)) {
-            // Verlaag het aantal lucifers dat de speler wil wegnemen
-            if (gekozenAantal > 1) {
-                gekozenAantal--;
-                writeNumberToSegment(1, gekozenAantal);
-                _delay_ms(200);
-            }
+
+        // Knop 1 verlaagt het gekozen aantal lucifers (niet lager dan 1)
+        if (buttonPressed(BUTTON_VERLAAG) && gekozenAantal > 1) {
+            gekozenAantal--;
+            _delay_ms(200);
         }
-        
+
+        // Wacht op de bevestiging van de speler door op knop 2 te drukken
         if (buttonPressed(BUTTON_PIN)) {
-            // Bevestig de keuze en pas het aantal lucifers aan
+            // Pas het aantal lucifers aan door het gekozen aantal weg te nemen
             *startAantal -= gekozenAantal;
+            // Toon het nieuwe aantal lucifers op het display
             writeNumberToSegment(2, *startAantal / 10);
             writeNumberToSegment(3, *startAantal % 10);
             _delay_ms(200);
+            break; // Verlaat de lus zodra de keuze is bevestigd
         }
     }
 }
+
 
 
 void computerBeurt(int *startAantal, int maxAantal) {
@@ -95,9 +92,23 @@ void computerBeurt(int *startAantal, int maxAantal) {
         genomenAantal = rand() % maxAantal + 1;
     }
 
+    // Toon het aantal lucifers dat de computer neemt op het meest linkse display
+    writeNumberToSegment(0, genomenAantal);
+
+    // Wacht op de bevestiging van de speler door op knop 2 te drukken
+    while (!buttonPressed(BUTTON_PIN)) {
+        // Wacht tot de speler de bevestigingsknop indrukt
+    }
+
     // Pas het aantal lucifers aan door het genomen aantal weg te nemen
     *startAantal -= genomenAantal;
+
+    // Toon het nieuwe aantal lucifers op het display
+    writeNumberToSegment(2, *startAantal / 10);
+    writeNumberToSegment(3, *startAantal % 10);
+    _delay_ms(200);
 }
+
 
 
 int main() {

@@ -145,13 +145,6 @@ int main() {
     int speler = rand() % 2;
 
     // Toon het startaantal en de letter die de beurt aangeeft op het display
-    writeNumberToSegment(2, startAantal / 10);
-    writeNumberToSegment(3, startAantal % 10);
-    if (speler == 1) {
-        writeCharToSegment(1, 'p');
-    } else {
-        writeCharToSegment(1, 'c');
-    }
 
     while (1) {
         if (speler == 1) {

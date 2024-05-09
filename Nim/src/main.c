@@ -7,9 +7,9 @@
 #include "display.h"
 #include <button.h>
 
-#define BUTTON_PIN PCINT1
-#define BUTTON_VERHOOG PCINT2
-#define BUTTON_VERLAAG PCINT0
+#define BUTTON_PIN PC1
+#define BUTTON_VERHOOG PC2
+#define BUTTON_VERLAAG PC0
 
 void initButton() {
     DDRC &= ~((1 << BUTTON_PIN) | (1 << BUTTON_VERHOOG) | (1 << BUTTON_VERLAAG));

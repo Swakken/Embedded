@@ -45,6 +45,60 @@ void bevestigKeuze(int *total, int value) {
     }
 }
 
+void spelerBeurt(int *startAantal, int maxAantal) {
+    int gekozenAantal = 0;
+    
+    // Blijf in de lus totdat de speler een geldig aantal lucifers kiest
+    while (gekozenAantal < 1 || gekozenAantal > maxAantal || gekozenAantal > *startAantal) {
+        // Laat de speler het aantal lucifers kiezen om weg te nemen
+        // Implementeer de code om de spelerinput te verkrijgen, bijvoorbeeld door knoppen te gebruiken
+        
+        // Wacht tot de speler de keuze bevestigt door op de tweede knop te drukken
+        if (buttonPressed(BUTTON_VERHOOG)) {
+            // Verhoog het aantal lucifers dat de speler wil wegnemen
+            if (gekozenAantal < maxAantal) {
+                gekozenAantal++;
+                writeNumberToSegment(1, gekozenAantal);
+                _delay_ms(200);
+            }
+        }
+        
+        if (buttonPressed(BUTTON_VERLAAG)) {
+            // Verlaag het aantal lucifers dat de speler wil wegnemen
+            if (gekozenAantal > 1) {
+                gekozenAantal--;
+                writeNumberToSegment(1, gekozenAantal);
+                _delay_ms(200);
+            }
+        }
+        
+        if (buttonPressed(BUTTON_PIN)) {
+            // Bevestig de keuze en pas het aantal lucifers aan
+            *startAantal -= gekozenAantal;
+            writeNumberToSegment(2, *startAantal / 10);
+            writeNumberToSegment(3, *startAantal % 10);
+            _delay_ms(200);
+        }
+    }
+}
+
+
+void computerBeurt(int *startAantal, int maxAantal) {
+    int genomenAantal;
+
+    // Bereken het aantal lucifers dat de computer neemt volgens de strategie van Nim
+    if ((*startAantal - 1) % (maxAantal + 1) == 0) {
+        // Als de huidige situatie een winnende positie is voor de computer, neem één lucifer
+        genomenAantal = 1;
+    } else {
+        // Zo niet, neem een willekeurig aantal tussen 1 en maxAantal
+        genomenAantal = rand() % maxAantal + 1;
+    }
+
+    // Pas het aantal lucifers aan door het genomen aantal weg te nemen
+    *startAantal -= genomenAantal;
+}
+
 
 int main() {
     initUSART();
@@ -92,118 +146,3 @@ int main() {
 
 
 
-
-
-/*
-#include <avr/io.h>
-#include <util/delay.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include "usart.h"
-#include "pot.h"
-#include "display.h"
-
-#define BUTTON_PIN PCINT1
-
-void initButton() {
-    DDRD &= ~(1 << BUTTON_PIN);
-    PORTD |= (1 << BUTTON_PIN);
-}
-
-int buttonPressed() {
-    return (PIND & (1 << BUTTON_PIN)) == 0;
-}
-
-void blinkLetter(char letter, int delayMs) {
-    for (int i = 0; i < 10; ++i) {
-        clearDisplay();
-        _delay_ms(delayMs);
-        writeCharAtPos(letter, 1);
-        _delay_ms(delayMs);
-    }
-}
-
-void persoon(int* startAantal, int maxAantal) {
-    printf("Speler's beurt. Kies het aantal lucifers om te nemen (1 tot %d):\n", maxAantal);
-    int gekozenAantal;
-    scanf("%d", &gekozenAantal);
-    if (gekozenAantal >= 1 && gekozenAantal <= maxAantal && gekozenAantal <= *startAantal) {
-        *startAantal -= gekozenAantal;
-    } else {
-        printf("Ongeldige invoer. Probeer opnieuw.\n");
-        persoon(startAantal, maxAantal); // Roep de functie opnieuw aan voor een nieuwe poging
-    }
-}
-
-void computer(int* startAantal, int maxAantal) {
-    int genomenAantal = rand() % maxAantal + 1; // Kies een willekeurig aantal lucifers
-    printf("De computer neemt %d lucifers.\n", genomenAantal);
-    *startAantal -= genomenAantal;
-}
-
-int main() {
-    initUSART();
-    startPotentiometer();
-    initDisplay();
-    initButton();
-
-    uint16_t value = 0;
-    unsigned int seed = 0;
-    int startAantal = 21;
-    int maxAantal = 3;
-
-    printf("Draai aan de potentiometer om de seed te kiezen en druk op de knop om te starten.\n");
-
-    // Wacht tot de gebruiker op de knop drukt
-    while (!buttonPressed()) {
-        value = readPotentiometer();
-        writeNumber(value % 10000); // Toon de waarde van de potentiometer op het display
-        _delay_ms(200);
-    }
-
-    // Genereer de game seed nadat de gebruiker op de knop heeft gedrukt
-    srand(value % 10000);
-    seed = value % 10000;
-    printf("Game started with seed: %u\n", seed);
-    writeNumber(seed); // Toon het seed op het display
-
-    int currentPlayer = rand() % 2;  // 0 voor speler, 1 voor computer
-    int displayStarter = currentPlayer + 1;  // '1' voor speler, '2' voor computer
-
-    // Knipper de startspeler indicator (numeriek, niet als letter)
-    for (int i = 0; i < 10; ++i) {
-        writeNumber(0); // Wis display
-        _delay_ms(500);
-        writeNumberToSegment(0, displayStarter); // Toon '1' of '2' op de eerste positie
-        _delay_ms(500);
-    }
-
-    if (displayStarter == 1) {
-        writeNumber(maxAantal); // Toon maxAantal als de speler begint
-    }
-
-    writeNumber(startAantal); // Toon startaantal lucifers
-
-    while (startAantal > 0) {
-        if (currentPlayer == 0) { // Speler's beurt
-            persoon(&startAantal, maxAantal); // Roep de persoon functie aan
-        } else { // Computer's beurt
-            computer(&startAantal, maxAantal); // Roep de computer functie aan
-        }
-
-        writeNumber(startAantal); // Update het aantal lucifers op het display
-        _delay_ms(1000); // Kort wachten voor duidelijke weergave
-        currentPlayer = (currentPlayer + 1) % 2; // Wissel de huidige speler
-    }
-
-    if (currentPlayer == 1) {
-        printf("De speler wint!\n");
-    } else {
-        printf("De computer wint!\n");
-    }
-
-    return 0;
-}
-
-
-*/

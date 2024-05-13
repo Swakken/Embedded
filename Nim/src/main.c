@@ -144,8 +144,6 @@ void computerBeurt(int *startAantal, int maxAantal) {
 }
 
 
-
-
 int main() {
     initUSART();
     startPotentiometer();

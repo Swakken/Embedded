@@ -12,15 +12,14 @@
 #define LED3 2
 #define LED4 3
 
-#define DELAY 500
 #define BUTTON_PIN PCINT1
 #define BUTTON_PIN2 PCINT2
 #define BUTTON_PIN3 PCINT3
+
 #define LED_COUNT 3
 #define MAX_LEVEL 10
-#define DELAY_MS 500
+#define DELAY 500
 #define BUTTON_PRESS_DELAY 200
-#define TIMEOUT_DELAY 5000 // 5 seconden timeout
 
 volatile int not_started = 1;
 volatile int game_over = 0;
@@ -118,6 +117,15 @@ int readButton() {
     return -1; // Geen geldige input
 }
 
+void flashAllLeds() {
+    for (int i = 0; i < LED_COUNT; i++) {
+        lightUpLed(i);
+    }
+    _delay_ms(200); // Vertraging voor aan
+    for (int i = 0; i < LED_COUNT; i++) {
+        lightDownLed(i);
+    }
+}
 
 
 void startGame() {
@@ -151,6 +159,8 @@ void startGame() {
         uint8_t success = readInput(puzzle, level);
         if (!success) {
             printf("Helaas, je hebt een fout gemaakt en het patroon niet correct herhaald.\n");
+            _delay_ms(500);
+            flashAllLeds();
             return;
         }
         printf("Correct! Ga door naar het volgende level.\n");

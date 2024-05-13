@@ -102,21 +102,22 @@ int readButton() {
     if (buttonPushed(BUTTON_PIN)) {
         _delay_ms(BUTTON_PRESS_DELAY);
         if (buttonPushed(BUTTON_PIN)) {
-            return BUTTON_PIN;
+            return 0; // Retourneert index voor LED1/puzzel[0]
         }
     } else if (buttonPushed(BUTTON_PIN2)) {
         _delay_ms(BUTTON_PRESS_DELAY);
         if (buttonPushed(BUTTON_PIN2)) {
-            return BUTTON_PIN2;
+            return 1; // Retourneert index voor LED2/puzzel[1]
         }
     } else if (buttonPushed(BUTTON_PIN3)) {
         _delay_ms(BUTTON_PRESS_DELAY);
         if (buttonPushed(BUTTON_PIN3)) {
-            return BUTTON_PIN3;
+            return 2; // Retourneert index voor LED3/puzzel[2]
         }
     }
-    return -1;
+    return -1; // Geen geldige input
 }
+
 
 
 void startGame() {

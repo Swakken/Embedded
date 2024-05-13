@@ -20,30 +20,34 @@ int buttonPressed(int button) {
     return (PINC & (1 << button)) == 0;
 }
 
-void verhoogKeuze(int *value, int maxValue) {
-    if (buttonPressed(BUTTON_VERHOOG) && *value < maxValue) {
-        (*value)++;
-        writeNumberToSegment(1, *value);
-        _delay_ms(200);
+void readButton(int *displayValue) {
+    while (1) {
+        if (buttonPressed(BUTTON_VERHOOG)) {
+            (*displayValue)++;
+            if (*displayValue > 3) {
+                *displayValue = 3; // Zorg ervoor dat het displaywaarde niet hoger gaat dan 3
+            }
+            writeNumberToSegment(3, *displayValue); // Update het display
+            _delay_ms(200);
+        }
+        
+        if (buttonPressed(BUTTON_VERLAAG)) {
+            (*displayValue)--;
+            if (*displayValue < 1) {
+                *displayValue = 1; // Zorg ervoor dat het displaywaarde niet lager gaat dan 1
+            }
+            writeNumberToSegment(3, *displayValue); // Update het display
+            _delay_ms(200);
+        }
+        
+        if (buttonPressed(BUTTON_PIN)) {
+            printf("Button value confirmed: %d\n", *displayValue);
+            break;
+        }
     }
 }
 
-void verlaagKeuze(int *value) {
-    if (buttonPressed(BUTTON_VERLAAG) && *value > 1) {
-        (*value)--;
-        writeNumberToSegment(1, *value);
-        _delay_ms(200);
-    }
-}
 
-void bevestigKeuze(int *total, int value) {
-    if (buttonPressed(BUTTON_PIN)) {
-        *total -= value;
-        writeNumberToSegment(2, *total / 10);
-        writeNumberToSegment(3, *total % 10);
-        _delay_ms(200);
-    }
-}
 
 void spelerBeurt(int *startAantal, int maxAantal) {
     int aantalGekozen = 1; // Begin met het standaard aantal lucifers

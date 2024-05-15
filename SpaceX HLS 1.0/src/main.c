@@ -3,9 +3,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <usart.h>
-#include <pot.h>
+
 #include "display.h"
-#include <button.h>
+#include "button.h"
+#include "led.h"
+#include "buz.h"
 
 #define LED1 0
 #define LED2 1

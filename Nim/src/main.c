@@ -87,13 +87,19 @@ void spelerBeurt(int startAantal, int maxAantal) {
         if (buttonPressed(BUTTON_VERHOOG) && aantalGekozen < maxAantal) {
             aantalGekozen++;
             printf("Waarde verhoogd met 1.\n");
-            _delay_ms(200);
+            _delay_ms(300); // Verhoog de debounce-tijd om meervoudige lezingen te verminderen
+            while (buttonPressed(BUTTON_VERHOOG)) {
+                // Wacht tot de knop wordt losgelaten
+            }
         }
 
         if (buttonPressed(BUTTON_VERLAAG) && aantalGekozen > 1) {
             aantalGekozen--;
             printf("Waarde verlaagd met 1.\n");
-            _delay_ms(200);
+            _delay_ms(300); // Verhoog de debounce-tijd om meervoudige lezingen te verminderen
+            while (buttonPressed(BUTTON_VERLAAG)) {
+                // Wacht tot de knop wordt losgelaten
+            }
         }
 
         if (buttonPressed(BUTTON_PIN)) {
@@ -101,11 +107,12 @@ void spelerBeurt(int startAantal, int maxAantal) {
             printf("Waarde bevestigd en afgetrokken van het startaantal.\n");
             writeNumberToSegment(1, startAantal / 10);
             writeNumberToSegment(2, startAantal % 10);
-            _delay_ms(200);
+            _delay_ms(300); // Consistentie met andere debounce vertragingen
             break;
         }
     }
 }
+
 
 
 
@@ -145,7 +152,7 @@ void computerBeurt(int *startAantal, int maxAantal) {
     }
     
     // Geef de controle door aan de speler
-    spelerBeurt(startAantal, maxAantal);
+    // spelerBeurt(startAantal, maxAantal);
 }
 
 

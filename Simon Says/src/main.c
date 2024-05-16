@@ -45,10 +45,16 @@ int getRandomNumber() {
 }
 
 void generatePuzzle(uint8_t puzzle[], int length) {
-    for (int i = 0; i < length; i++) {
-        puzzle[i] = getRandomNumber();
+    static int currentLength = 0;
+
+    if (currentLength < length) {
+        for (int i = currentLength; i < length; i++) {
+            puzzle[i] = getRandomNumber();
+        }
+        currentLength = length;
     }
 }
+
 
 void printPuzzle(uint8_t puzzle[], int length) {
     printf("[");
@@ -146,6 +152,7 @@ void startGame() {
     printf("De waarde van seedTellerLed4 is: %d\n", seedTellerLed4);
 
     uint8_t puzzle[MAX_LEVEL];
+    int currentLength = 0;
 
     for (int level = 1; level <= MAX_LEVEL; level++) {
         generatePuzzle(puzzle, level);

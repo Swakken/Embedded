@@ -64,11 +64,12 @@ void updateParameters() {
 void updateDisplay() {
 
     if (distance <= 0) {
-        safe = 0; // Stop het spel als de lander de maanoppervlakte heeft bereikt
-        distance = 0; // Voorkom een negatieve afstand
+        safe = 0; 
+        distance = 0; 
+        
     }
     if (burst == 0) {
-        currentSpeed -= gravity / 5; // Zwaartekracht moet nog worden afgetrokken als er geen burst is
+        currentSpeed -= gravity / 5; 
     }
 }
 
@@ -137,7 +138,7 @@ void checkWin() {
     } 
 
     // Als we verliezen
-    if (distance == 0 || fuelReserve <= 0) {
+    if (distance <= 0 || fuelReserve <= 0) {
         safe = 1;
         win = 0;
     } 

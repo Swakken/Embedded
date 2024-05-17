@@ -42,10 +42,9 @@ void initButton() {
     PORTC |= (1 << BUTTON_PIN) | (1 << BUTTON_VERHOOG) | (1 << BUTTON_VERLAAG);
 }
 
-
-
 void spelerBeurt(int startAantal, int maxAantal) {
     printf("Speler is aan de beurt!\n");
+    int aantalGekozen = 1;
 
     while (1) {
         writeNumberToSegment(0, aantalGekozen);
@@ -83,6 +82,7 @@ void spelerBeurt(int startAantal, int maxAantal) {
             break;
         }
     }
+    computerBeurt(startAantal, maxAantal);
 }
 
 
@@ -90,6 +90,7 @@ void spelerBeurt(int startAantal, int maxAantal) {
 
 void computerBeurt(int startAantal, int maxAantal) {
     printf("De beurt is aan de computer.\n");
+    int aantalGekozen = rand() % maxAantal + 1;
 
     while (1) {
         writeCharToSegment(1, 'c'); 
@@ -135,11 +136,10 @@ void computerBeurt(int startAantal, int maxAantal) {
         writeNumberToSegment(3, startAantal % 10);
         _delay_ms(200);
     }
-        // Geef de controle door aan de speler
+
     spelerBeurt(startAantal, maxAantal);
+
 }
-
-
 
 
 int main() {
@@ -170,11 +170,13 @@ int main() {
 
     while (1) {
         if (speler == 1) {
+            speler = 1;  // Wissel naar computer
             spelerBeurt(startAantal, maxAantal);
-            speler = 0;  // Wissel naar computer
+            
         } else {
+            speler = 0;  // Wissel naar speler
             computerBeurt(startAantal, maxAantal);
-            speler = 1;  // Wissel naar speler
+           
         }
 
         if (startAantal <= 0) {
@@ -182,6 +184,9 @@ int main() {
             break; 
         }
     }
+
+
+
 
     return 0;
 }

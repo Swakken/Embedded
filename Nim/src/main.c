@@ -53,26 +53,32 @@ void spelerBeurt(int startAantal, int maxAantal) {
         writeNumberToSegment(2, startAantal / 10);
         writeNumberToSegment(3, startAantal % 10);
 
-        // && aantalGekozen < maxAantal (Lijkt niet te werken? Oplossing?)
-        if (buttonPushed(3)) { 
-            writeNumberToSegment(0, ++aantalGekozen);
-            printf("Waarde verhoogd met 1.\n");
-            ++aantalGekozen;
-            _delay_ms(300);
-        }
-        // && aantalGekozen > 1 (Lijkt niet te werken? Oplossing?)
-        if (buttonPushed(2)) {
-            writeNumberToSegment(0, --aantalGekozen);
-            printf("Waarde verlaagd met 1.\n");
-            --aantalGekozen;
-            _delay_ms(300);
+        // Verhogen van aantalGekozen
+        if (buttonPushed(3)) {
+            if (aantalGekozen < 3) { // Werkt niet met maxAantal?
+                aantalGekozen++;
+                writeNumberToSegment(0, aantalGekozen);
+                printf("Waarde verhoogd met 1.\n");
+                _delay_ms(300);
+            }
         }
 
+        // Verlagen van aantalGekozen
+        if (buttonPushed(2)) {
+            if (aantalGekozen > 1) {
+                aantalGekozen--;
+                writeNumberToSegment(0, aantalGekozen);
+                printf("Waarde verlaagd met 1.\n");
+                _delay_ms(300);
+            }
+        }
+
+        // Bevestigen van de keuze
         if (buttonPushed(1)) {
             startAantal -= aantalGekozen;
             printf("Waarde bevestigd en afgetrokken van het startaantal.\n");
-            writeNumberToSegment(1, startAantal / 10);
-            writeNumberToSegment(2, startAantal % 10);
+            writeNumberToSegment(2, startAantal / 10);
+            writeNumberToSegment(3, startAantal % 10);
             _delay_ms(300);
             break;
         }
@@ -82,42 +88,59 @@ void spelerBeurt(int startAantal, int maxAantal) {
 
 
 
-void computerBeurt(int *startAantal, int maxAantal) {
-    
-    writeCharToSegment(1, 'c'); 
-    writeNumberToSegment(2, *startAantal / 10); 
-    writeNumberToSegment(3, *startAantal % 10);
-    writeNumberToSegment(0, aantalGekozen);
+void computerBeurt(int startAantal, int maxAantal) {
+    printf("De beurt is aan de computer.\n");
 
     while (1) {
-        if ((*startAantal - 1) % (maxAantal + 1) == 0) {
+        writeCharToSegment(1, 'c'); 
+        writeNumberToSegment(2, startAantal / 10); 
+        writeNumberToSegment(3, startAantal % 10);
+
+        if ((startAantal - 1) % (maxAantal + 1) == 0) {
             aantalGekozen = 1;
         } else {
             aantalGekozen = rand() % maxAantal + 1;
         }
 
-        while (!buttonPushed(BUTTON_PIN)) {
-            
-        }
-        
-        printf("De beurt is aan de computer.\n");
+        writeNumberToSegment(0, aantalGekozen);
+
         printf("De computer kiest %d lucifers.\n", aantalGekozen);
         printf("Bevestig de waarde van de computer door op de eerste button te drukken\n");
 
+        // Wacht totdat de button is ingedrukt en losgelaten
+        while (!buttonPushed(BUTTON_PIN)) {
+            // Continue to update display during the wait
+            writeCharToSegment(1, 'c');
+            writeNumberToSegment(2, startAantal / 10);
+            writeNumberToSegment(3, startAantal % 10);
+            writeNumberToSegment(0, aantalGekozen);
+        }
+
+        while (buttonPushed(BUTTON_PIN)) {
+            // Optionally keep updating or do nothing
+        }
+
+        printf("De computer waarde is bevestigd.\n");
+
         startAantal -= aantalGekozen;
 
-        writeNumberToSegment(2, *startAantal / 10);
-        writeNumberToSegment(3, *startAantal % 10);
-        _delay_ms(200);
-
-        if (*startAantal <= 0) {
+        if (startAantal <= 0) {
+            printf("Spel afgelopen\n");
             break;
         }
+
+        // Update the display for the next iteration or exit
+        writeCharToSegment(1, 'c');
+        writeNumberToSegment(2, startAantal / 10);
+        writeNumberToSegment(3, startAantal % 10);
+        _delay_ms(200);
     }
-    
-    // Geef de controle door aan de speler
+        // Geef de controle door aan de speler
     spelerBeurt(startAantal, maxAantal);
 }
+
+
+
 
 int main() {
     initUSART();
@@ -141,18 +164,17 @@ int main() {
     srand(seed);
     printf("Game started with seed: %u\n", seed);
 
-    
     int maxAantal = (rand() % 3) + 1;
-    // 0 voor C en 1 voor P
+    // 0 voor C (computer) en 1 voor P (player)
     int speler = rand() % 2;
 
     while (1) {
         if (speler == 1) {
             spelerBeurt(startAantal, maxAantal);
-            speler = 1;
+            speler = 0;  // Wissel naar computer
         } else {
             computerBeurt(startAantal, maxAantal);
-            speler = 0;
+            speler = 1;  // Wissel naar speler
         }
 
         if (startAantal <= 0) {

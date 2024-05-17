@@ -22,49 +22,47 @@
 #define BUTTON_PIN3 PCINT3
 
 float gravity = 1.622;
-float currentSpeed = 100;
+int currentSpeed = 100;
 int distance = 9999; 
-float maxFuel = 1500; // Brandstof in liter
+int fuelReserve = 1500; // Brandstof in liter
 int safe = 1; // Als alles goed gaat dan blijft je in de while loop
 float burst = 0;
-int teller = 0;
-
-
+uint32_t teller = 0;
+int win = 0; // Als je gewonnen bent
 
 
 void handleBurst() {
     if (buttonPushed(BUTTON_PIN2)) {
-        if (maxFuel > 50) {
-            burst = 50; // Gebruik maximaal 50 liter per seconde als de knop wordt ingedrukt
+        if (fuelReserve > 50) {
+            burst = 50; 
         } else {
-            burst = maxFuel; // Gebruik resterende brandstof als minder dan 50 liter over is
+            burst = fuelReserve;
         }
     } else {
-        burst = 0; // Geen burst als de knop niet wordt ingedrukt
+        burst = 0;
     }
 }
 
+void updateBurst()
+{
+  // als je op de knop drukt, verhoogt de burst
+  // mag niet meer dan 50 liter per seconde
+  if (buttonPushed(2) && fuelReserve > 0) {
+    burst++;
+    if (burst >= 50) burst = 50;
+  } else {
+    burst = 0;
+  }
+}
 
-void updateLedBlinkRate() {
-    float remainingFuelPercent = (maxFuel / 1500.0) * 100;
-    int blinkRate = 1000; // basis knipperfrequentie in ms
-
-    if (remainingFuelPercent < 25) {
-        blinkRate = 250; // sneller knipperen als brandstof laag is
-    } else if (remainingFuelPercent < 50) {
-        blinkRate = 500;
-    } else if (remainingFuelPercent < 75) {
-        blinkRate = 750;
-    }
-
-    // Leds laten flikkeren
-
+void updateParameters() {
+    currentSpeed += gravity - burst / 5;
+    distance -= currentSpeed;
+    fuelReserve -= burst;
 }
 
 void updateDisplay() {
-    currentSpeed += gravity - burst / 5;
-    distance -= (int)currentSpeed;
-    maxFuel -= burst;
+
     if (distance <= 0) {
         safe = 0; // Stop het spel als de lander de maanoppervlakte heeft bereikt
         distance = 0; // Voorkom een negatieve afstand
@@ -74,70 +72,77 @@ void updateDisplay() {
     }
 }
 
-
 void showParametersOnSerial() {
-    printf("Voor printf - Snelheid: %.2f, Brandstof: %.1f\n", currentSpeed, maxFuel);
     printf("Afstand: %d m\n", distance);
-    printf("Snelheid: %.2f m/s\n", currentSpeed);
-    printf("Brandstof: %.1f liter\n\n", maxFuel);
+    printf("Snelheid: %d m/s\n", currentSpeed);
+    printf("Brandstof: %d liter\n\n", fuelReserve);
 }
 
 void showParameters() {
-    
-    // showLeds();
-    // Leds aansturen voor brandstof
-    // Led display met hoogte in meter
-
     writeNumber(distance);
     showLeds();
 }
 
 ISR(TIMER0_COMPA_vect) {
     teller++;
-    printf("ISR Called: %d\n", teller);
 
     // We voeren iets uit na 1 seconden
-    if (teller % 250 == 0) {  // Elke seconde bij een 1kHz timer frequentie en prescaler van 256
-        handleBurst();        // Handleer de burst voordat je de display en snelheid update
-        updateDisplay();
+    if (teller % 250 == 0) {
+        handleBurst();
+        updateParameters();
         showParametersOnSerial();
         showParameters();  // Update de weergave
     }
-    
-    // Printf om de seconde van alle informatie
+
+    if ((teller % 25) == 0) {
+        updateBurst();
+    }
 }
 
 void showLeds() {
     
-    lightUpLed(LED1);
-    lightUpLed(LED2);
-    lightUpLed(LED3);
-    lightUpLed(LED4);
+    if (fuelReserve == 1500)
+    {
+        lightUpAllLeds();
+    }
 
-    if (maxFuel <= 0) {
+    if (fuelReserve <= 0) {
         lightDownAllLeds();
         return;
     }
 
-    if (maxFuel <= 1500 && maxFuel > 1125) {
-        lightUpAllLeds();
+    if (fuelReserve <= 1125) {
+        lightDownLed(3);
     }
 
-    if (maxFuel <= 1125 && maxFuel > 750) {
-        lightDownLed(LED1);
+    if (fuelReserve <= 750) {
+        lightDownLed(2);
     }
 
-    if (maxFuel <= 750 && maxFuel > 375) {
-        lightDownLed(LED2);
+    if (fuelReserve <= 375) {
+        lightDownLed(1);
     }
 
-    if (maxFuel <= 375 && maxFuel > 0) {
-        lightDownLed(LED3);
+    if (fuelReserve <= 0) {
+        lightDownAllLeds();
     }
 }
 
+void checkWin() {
+    
+    // Als we winnen
+    if (distance <= 3 && currentSpeed <= 5) {
+        safe = 0;
+        win = 1;
+    } 
 
-
+    // Als we verliezen
+    if (distance == 0 || fuelReserve <= 0) {
+        safe = 1;
+        win = 0;
+    } 
+    
+}   
 
 void startUp() {
     
@@ -164,17 +169,17 @@ void startUp() {
 
     sei();
 
-
 }
 
 int main() {
     
     startUp();
 
-    while (safe) {
-        
+    while (safe) {       
         showParameters();
+        checkWin();
+ 
     }
-
-
+    printf("Spel is afgelopen\n");
+   
 }

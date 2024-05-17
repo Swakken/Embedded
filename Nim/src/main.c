@@ -37,43 +37,12 @@ Hoe ga ik als de speler aan de beurt is geweest naar de computerBeurt functie en
 */
 
 
-
-
 void initButton() {
     DDRC &= ~((1 << BUTTON_PIN) | (1 << BUTTON_VERHOOG) | (1 << BUTTON_VERLAAG));
     PORTC |= (1 << BUTTON_PIN) | (1 << BUTTON_VERHOOG) | (1 << BUTTON_VERLAAG);
 }
 
-int buttonPressed(int button) {
-    return (PINC & (1 << button)) == 0;
-}
 
-void readButton(int *displayValue) {
-    while (1) {
-        if (buttonPressed(BUTTON_VERHOOG)) {
-            (*displayValue)++;
-            if (*displayValue > 3) {
-                *displayValue = 3;
-            }
-            writeNumberToSegment(3, *displayValue);
-            _delay_ms(200);
-        }
-        
-        if (buttonPressed(BUTTON_VERLAAG)) {
-            (*displayValue)--;
-            if (*displayValue < 1) {
-                *displayValue = 1;
-            }
-            writeNumberToSegment(3, *displayValue);
-            _delay_ms(200);
-        }
-        
-        if (buttonPressed(BUTTON_PIN)) {
-            printf("Button value confirmed: %d\n", *displayValue);
-            break;
-        }
-    }
-}
 
 void spelerBeurt(int startAantal, int maxAantal) {
     printf("Speler is aan de beurt!\n");
@@ -84,30 +53,27 @@ void spelerBeurt(int startAantal, int maxAantal) {
         writeNumberToSegment(2, startAantal / 10);
         writeNumberToSegment(3, startAantal % 10);
 
-        if (buttonPressed(BUTTON_VERHOOG) && aantalGekozen < maxAantal) {
-            aantalGekozen++;
+        // && aantalGekozen < maxAantal (Lijkt niet te werken? Oplossing?)
+        if (buttonPushed(3)) { 
+            writeNumberToSegment(0, ++aantalGekozen);
             printf("Waarde verhoogd met 1.\n");
-            _delay_ms(300); // Verhoog de debounce-tijd om meervoudige lezingen te verminderen
-            while (buttonPressed(BUTTON_VERHOOG)) {
-                // Wacht tot de knop wordt losgelaten
-            }
+            ++aantalGekozen;
+            _delay_ms(300);
         }
-
-        if (buttonPressed(BUTTON_VERLAAG) && aantalGekozen > 1) {
-            aantalGekozen--;
+        // && aantalGekozen > 1 (Lijkt niet te werken? Oplossing?)
+        if (buttonPushed(2)) {
+            writeNumberToSegment(0, --aantalGekozen);
             printf("Waarde verlaagd met 1.\n");
-            _delay_ms(300); // Verhoog de debounce-tijd om meervoudige lezingen te verminderen
-            while (buttonPressed(BUTTON_VERLAAG)) {
-                // Wacht tot de knop wordt losgelaten
-            }
+            --aantalGekozen;
+            _delay_ms(300);
         }
 
-        if (buttonPressed(BUTTON_PIN)) {
+        if (buttonPushed(1)) {
             startAantal -= aantalGekozen;
             printf("Waarde bevestigd en afgetrokken van het startaantal.\n");
             writeNumberToSegment(1, startAantal / 10);
             writeNumberToSegment(2, startAantal % 10);
-            _delay_ms(300); // Consistentie met andere debounce vertragingen
+            _delay_ms(300);
             break;
         }
     }
@@ -118,6 +84,11 @@ void spelerBeurt(int startAantal, int maxAantal) {
 
 void computerBeurt(int *startAantal, int maxAantal) {
     
+    writeCharToSegment(1, 'c'); 
+    writeNumberToSegment(2, *startAantal / 10); 
+    writeNumberToSegment(3, *startAantal % 10);
+    writeNumberToSegment(0, aantalGekozen);
+
     while (1) {
         if ((*startAantal - 1) % (maxAantal + 1) == 0) {
             aantalGekozen = 1;
@@ -125,15 +96,8 @@ void computerBeurt(int *startAantal, int maxAantal) {
             aantalGekozen = rand() % maxAantal + 1;
         }
 
-        // Foutgedeelte - Start
-        writeCharToSegment(1, 'c');  // Segment 1
-        writeNumberToSegment(2, *startAantal / 10);  // Segment 2
-        writeNumberToSegment(3, *startAantal % 10);  // Segment 3
-        writeNumberToSegment(0, aantalGekozen);  // Segment 0
-        // Foutgedeelte - Einde
-
-        while (!buttonPressed(BUTTON_PIN)) {
-            // Wachten tot de knop wordt losgelaten
+        while (!buttonPushed(BUTTON_PIN)) {
+            
         }
         
         printf("De beurt is aan de computer.\n");
@@ -152,15 +116,8 @@ void computerBeurt(int *startAantal, int maxAantal) {
     }
     
     // Geef de controle door aan de speler
-    // spelerBeurt(startAantal, maxAantal);
+    spelerBeurt(startAantal, maxAantal);
 }
-
-
-
-
-
-
-
 
 int main() {
     initUSART();
@@ -175,7 +132,7 @@ int main() {
 
     printf("Draai aan de potentiometer om de seed te kiezen en druk op de knop om te starten.\n");
 
-    while (!buttonPressed(BUTTON_PIN)) {
+    while (!buttonPushed(BUTTON_PIN)) {
         value = readPotentiometer();
         writeNumberAndWait(value % 10000, 200);
     }

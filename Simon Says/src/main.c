@@ -78,7 +78,7 @@ void playPuzzle(uint8_t puzzle[], int size) {
 
 uint8_t readInput(uint8_t puzzle[], int size) {
     int position = 0;
-    game_over = 0; // Reset game over status
+    game_over = 0;
 
     while (position < size && !game_over) {
         int button = readButton();
@@ -92,10 +92,10 @@ uint8_t readInput(uint8_t puzzle[], int size) {
     }
 
     if (position == size) {
-        return 1; // Success
+        return 1;
     } else {
         printf("Timeout! No input received.\n");
-        return 0; // Timeout
+        return 0; 
     }
 }
 
@@ -107,27 +107,27 @@ int readButton() {
     if (buttonPushed(BUTTON_PIN)) {
         _delay_ms(BUTTON_PRESS_DELAY);
         if (buttonPushed(BUTTON_PIN)) {
-            return 0; // Retourneert index voor LED1/puzzel[0]
+            return 0;
         }
     } else if (buttonPushed(BUTTON_PIN2)) {
         _delay_ms(BUTTON_PRESS_DELAY);
         if (buttonPushed(BUTTON_PIN2)) {
-            return 1; // Retourneert index voor LED2/puzzel[1]
+            return 1;
         }
     } else if (buttonPushed(BUTTON_PIN3)) {
         _delay_ms(BUTTON_PRESS_DELAY);
         if (buttonPushed(BUTTON_PIN3)) {
-            return 2; // Retourneert index voor LED3/puzzel[2]
+            return 2; 
         }
     }
-    return -1; // Geen geldige input
+    return -1;
 }
 
 void flashAllLeds() {
     for (int i = 0; i < LED_COUNT; i++) {
         lightUpLed(i);
     }
-    _delay_ms(200); // Vertraging voor aan
+    _delay_ms(200);
     for (int i = 0; i < LED_COUNT; i++) {
         lightDownLed(i);
     }

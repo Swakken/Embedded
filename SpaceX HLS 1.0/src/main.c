@@ -43,10 +43,7 @@ void handleBurst() {
     }
 }
 
-void updateBurst()
-{
-  // als je op de knop drukt, verhoogt de burst
-  // mag niet meer dan 50 liter per seconde
+void updateBurst() {
   if (buttonPushed(2) && fuelReserve > 0) {
     burst++;
     if (burst >= 50) burst = 50;
@@ -87,12 +84,11 @@ void showParameters() {
 ISR(TIMER0_COMPA_vect) {
     teller++;
 
-    // We voeren iets uit na 1 seconden
     if (teller % 250 == 0) {
         handleBurst();
         updateParameters();
         showParametersOnSerial();
-        showParameters();  // Update de weergave
+        showParameters();
     }
 
     if ((teller % 25) == 0) {
@@ -102,8 +98,7 @@ ISR(TIMER0_COMPA_vect) {
 
 void showLeds() {
     
-    if (fuelReserve == 1500)
-    {
+    if (fuelReserve == 1500) {
         lightUpAllLeds();
     }
 
@@ -179,8 +174,7 @@ int main() {
     while (safe) {       
         showParameters();
         checkWin();
- 
     }
-    printf("Spel is afgelopen\n");
-   
+
+    printf("Spel is afgelopen\n");   
 }

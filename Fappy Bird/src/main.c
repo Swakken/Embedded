@@ -5,7 +5,8 @@
 #include <stdlib.h>
 
 #include <usart.h>
-#include <pot.h>
+
+#include "pot.h"
 #include "display.h"
 #include "button.h"
 #include "led.h"

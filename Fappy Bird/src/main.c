@@ -12,7 +12,7 @@
 #include "led.h"
 
 #define BUTTON_PIN0 PC0
-#define BUTTON_PIN1 PC1
+#define BUTTON_PIN1 PC1  
 #define BUTTON_PIN2 PC2
 
 #define LED1 0
@@ -26,6 +26,7 @@
 
 
 int gameStarted = 0;
+int lightShowControl = 1;
 
 // Functie om te controleren of een van de knoppen is ingedrukt
 int isAnyButtonPressed() {
@@ -39,35 +40,34 @@ void waitForButtonPress() {
     }
 }
 
-
 void lightShow() {
-    printf("Druk op een willekeurige knop om het spel te starten\n");
+    while (lightShowControl == 1) { // Controleer of de lightshow actief moet blijven
+        for (int i = 0; i < NUM_LEDS; i++) {
+            lightUpLed(i);
+            _delay_ms(500);
+            lightDownLed(i);
 
-    while (!gameStarted) {
-        // Blijf de lichtshow continu herhalen totdat het spel is gestart door de gebruiker
-        while (1) {
-            // Licht elke LED op volgorde op
-            for (int i = 0; 1; i = (i + 1) % NUM_LEDS) {
-                lightUpLed(i);
-                _delay_ms(500);    // Wacht 500ms
-                lightDownLed(i);
-
-                // Controleer of een van de knoppen is ingedrukt om het spel te starten
-                if (isAnyButtonPressed()) {
-                    gameStarted = 1;
-                    printf("Het spel is gestart!\n");
-                    break; // Verlaat de binnenste lus als het spel is gestart
-                }
-            }
-            
-            // Verlaat de binnenste lus als het spel is gestart
-            if (gameStarted) {
-                break;
-            }
+            if (lightShowControl != 1) break; // Verlaat de lus als de lightshow moet stoppen
         }
     }
 }
 
+void startSpel() {
+    int gameStarted = 0;
+    printf("Druk op een willekeurige knop om het spel te starten\n");
+
+    while (gameStarted == 0) {
+        lightShowControl = 1; // Activeer de lightshow
+        lightShow();
+
+        // Controleer of een van de knoppen is ingedrukt om het spel te starten
+        if (isAnyButtonPressed()) {
+            lightShowControl = 0; // Stop de lightshow
+            gameStarted = 1;
+            printf("Het spel is gestart!\n");
+        }
+    }
+}
 
 // Functie om de gebruiker de snelheid van de obstakels te laten kiezen
 void spelerNiveau() {
@@ -89,13 +89,6 @@ void spelerNiveau() {
     // Ga verder met het spel...
 }
 
-
-
-
-
-
-
-
 int main() {
     initUSART();
     initDisplay(); 
@@ -104,12 +97,9 @@ int main() {
     lightDownAllLeds();
     enableAllButtons();
 
+    startSpel();
+
     spelerNiveau();
-
-    lightShow();
-
-    // Voer de rest van het spel uit
-    // ...
 
     return 0;
 }

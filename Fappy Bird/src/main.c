@@ -36,18 +36,18 @@ int isAnyButtonPressed() {
 // Wacht totdat een van de knoppen wordt ingedrukt
 void waitForButtonPress() {
     while (!isAnyButtonPressed()) {
-        // Doe niets en wacht
+
     }
 }
 
 void lightShow() {
-    while (lightShowControl == 1) { // Controleer of de lightshow actief moet blijven
+    while (lightShowControl == 1) {
         for (int i = 0; i < NUM_LEDS; i++) {
             lightUpLed(i);
             _delay_ms(500);
             lightDownLed(i);
 
-            if (lightShowControl != 1) break; // Verlaat de lus als de lightshow moet stoppen
+            if (lightShowControl != 1) break;
         }
     }
 }
@@ -57,12 +57,11 @@ void startSpel() {
     printf("Druk op een willekeurige knop om het spel te starten\n");
 
     while (gameStarted == 0) {
-        lightShowControl = 1; // Activeer de lightshow
+        lightShowControl = 1;
         lightShow();
 
-        // Controleer of een van de knoppen is ingedrukt om het spel te starten
         if (isAnyButtonPressed()) {
-            lightShowControl = 0; // Stop de lightshow
+            lightShowControl = 0;
             gameStarted = 1;
             printf("Het spel is gestart!\n");
         }
@@ -73,20 +72,16 @@ void startSpel() {
 void spelerNiveau() {
     printf("Draai aan de potentiometer\n");
 
-    int level = 0; // Variabele om het gekozen niveau op te slaan
+    int level = 0;
 
     while (!isAnyButtonPressed()) {
-        // Lees de waarde van de potentiometer en converteer deze naar een niveau (1-10)
-        level = (readPotentiometer() * 10) / 1024; // Converteer de waarde naar een niveau tussen 0 en 10
-        // Toon het niveau op het LED-display
+        level = (readPotentiometer() * 10) / 1024;
         writeNumber(level);
     }
 
-    // Wacht op knopdruk om het spel te starten
     waitForButtonPress();
 
-    gameStarted = 1; // Markeer het spel als gestart
-    // Ga verder met het spel...
+    gameStarted = 1;
 }
 
 int main() {

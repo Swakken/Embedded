@@ -119,6 +119,7 @@ void computerBeurt(int startAantal, int maxAantal) {
 
         while (buttonPushed(BUTTON_PIN)) {
             // Optionally keep updating or do nothing
+           
         }
 
         printf("De computer waarde is bevestigd.\n");
@@ -134,11 +135,9 @@ void computerBeurt(int startAantal, int maxAantal) {
         writeCharToSegment(1, 'c');
         writeNumberToSegment(2, startAantal / 10);
         writeNumberToSegment(3, startAantal % 10);
-        _delay_ms(200);
+       // _delay_ms(20000);
+        spelerBeurt(startAantal, maxAantal);
     }
-
-    spelerBeurt(startAantal, maxAantal);
-
 }
 
 
@@ -165,28 +164,21 @@ int main() {
     printf("Game started with seed: %u\n", seed);
 
     int maxAantal = (rand() % 3) + 1;
-    // 0 voor C (computer) en 1 voor P (player)
-    int speler = rand() % 2;
 
-    while (1) {
-        if (speler == 1) {
-            speler = 1;  // Wissel naar computer
-            spelerBeurt(startAantal, maxAantal);
-            
-        } else {
-            speler = 0;  // Wissel naar speler
-            computerBeurt(startAantal, maxAantal);
-           
+
+    while (startAantal > 0) {
+        spelerBeurt(startAantal, maxAantal);
+        if (startAantal <= 0) {
+            printf("Speler heeft gewonnen!\n");
+            break;
         }
 
+        computerBeurt(startAantal, maxAantal);
         if (startAantal <= 0) {
-            printf("Spel afgelopen\n");
-            break; 
+            printf("Computer heeft gewonnen!\n");
+            break;
         }
     }
-
-
-
 
     return 0;
 }

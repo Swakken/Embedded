@@ -68,7 +68,11 @@ void lightShow() {
 }
 
 
+// Functie om de gebruiker de snelheid van de obstakels te laten kiezen
+void spelerNiveau() {
+    printf("Draai aan de potentiometer");
 
+}
 
 
 

@@ -51,7 +51,7 @@ void spelerBeurt(int startAantal, int maxAantal) {
         writeNumberToSegment(3, startAantal % 10);
 
         // Verhogen van aantalGekozen
-        if (buttonPushed(3)) {
+        if (buttonPushed(3)) { // BUTTON_VERHOOG PC2
             if (aantalGekozen < 3) { // Werkt niet met maxAantal?
                 aantalGekozen++;
                 writeNumberToSegment(0, aantalGekozen);
@@ -61,7 +61,7 @@ void spelerBeurt(int startAantal, int maxAantal) {
         }
 
         // Verlagen van aantalGekozen
-        if (buttonPushed(2)) {
+        if (buttonPushed(2)) { // BUTTON_VERLAAG PC0
             if (aantalGekozen > 1) {
                 aantalGekozen--;
                 writeNumberToSegment(0, aantalGekozen);
@@ -71,7 +71,7 @@ void spelerBeurt(int startAantal, int maxAantal) {
         }
 
         // Bevestigen van de keuze
-        if (buttonPushed(1)) {
+        if (buttonPushed(1)) { // BUTTON_PIN PC1
             startAantal -= aantalGekozen;
             printf("Waarde bevestigd en afgetrokken van het startaantal.\n");
             writeNumberToSegment(2, startAantal / 10);
@@ -80,6 +80,7 @@ void spelerBeurt(int startAantal, int maxAantal) {
             break;
         }
     }
+    // Ga naar de computerBeurt functie
     computerBeurt(startAantal, maxAantal);
 }
 
@@ -108,7 +109,6 @@ void computerBeurt(int startAantal, int maxAantal) {
 
         // Wacht totdat de button is ingedrukt en losgelaten
         while (!buttonPushed(BUTTON_PIN)) {
-            // Continue to update display during the wait
             writeCharToSegment(1, 'c');
             writeNumberToSegment(2, startAantal / 10);
             writeNumberToSegment(3, startAantal % 10);
@@ -116,7 +116,6 @@ void computerBeurt(int startAantal, int maxAantal) {
         }
 
         while (buttonPushed(BUTTON_PIN)) {
-            // Optionally keep updating or do nothing
            
         }
 
@@ -129,11 +128,11 @@ void computerBeurt(int startAantal, int maxAantal) {
             break;
         }
 
-        // Update the display for the next iteration or exit
+        // Update de display
         writeCharToSegment(1, 'c');
         writeNumberToSegment(2, startAantal / 10);
         writeNumberToSegment(3, startAantal % 10);
-       // _delay_ms(20000);
+        // Ga naar de spelerBeurt functie
         spelerBeurt(startAantal, maxAantal);
     }  
 }

@@ -14,35 +14,33 @@
 int aantalGekozen = 1;
 int startAantal = 21;
 
-/*
-In de spelerBeurt functie is er een fout met de buttons, als ik de middelste button druk dan krijg ik volgende waarde in de terminal:
-
-Waarde verhoogd met 1
-Waarde verlaagd met 1
-
-één van de buttons staat dus fout ingesteld, maar ik heb alles getest en lijkt te werken? 
-
---------------
-
- In de computerBeurt functie worden de volgende 3 waarden niet getoond op de display
-    writeCharToSegment(1, 'p');
-    writeNumberToSegment(2, startAantal / 10);
-    writeNumberToSegment(3, startAantal % 10);
-
--------------
-
-Hoe ga ik als de speler aan de beurt is geweest naar de computerBeurt functie en omgekeerd? 
-
-
-*/
-
-
 void initButton() {
     DDRC &= ~((1 << BUTTON_PIN) | (1 << BUTTON_VERHOOG) | (1 << BUTTON_VERLAAG));
     PORTC |= (1 << BUTTON_PIN) | (1 << BUTTON_VERHOOG) | (1 << BUTTON_VERLAAG);
 }
 
+void zetDisplayUit() {
+    for (int i = 0; i < 4; i++) {
+        writeNumberToSegment(i, ' ');
+    }
+}
+
+void stopSpel() {
+    printf("Spel afgelopen\n");
+    zetDisplayUit();
+    while (1) {
+
+    }
+}
+
 void spelerBeurt(int startAantal, int maxAantal) {
+
+    // Check eerst of startAantal = 0 voordrat we in de While lus gaan en verder met het spel gaan
+    if (startAantal == 0) {
+        printf("Spel afgelopen\n");
+        stopSpel();
+    }
+
     printf("Speler is aan de beurt!\n");
     int aantalGekozen = 1;
 
@@ -85,22 +83,22 @@ void spelerBeurt(int startAantal, int maxAantal) {
     computerBeurt(startAantal, maxAantal);
 }
 
-
-
-
 void computerBeurt(int startAantal, int maxAantal) {
+
+    if (startAantal <= 0) {
+        stopSpel();
+    }
+
     printf("De beurt is aan de computer.\n");
-    int aantalGekozen = rand() % maxAantal + 1;
 
     while (1) {
         writeCharToSegment(1, 'c'); 
         writeNumberToSegment(2, startAantal / 10); 
         writeNumberToSegment(3, startAantal % 10);
 
-        if ((startAantal - 1) % (maxAantal + 1) == 0) {
-            aantalGekozen = 1;
-        } else {
-            aantalGekozen = rand() % maxAantal + 1;
+        int aantalGekozen = rand() % maxAantal + 1;
+        if ((startAantal - aantalGekozen) % (maxAantal + 1) == 0) {
+            aantalGekozen = (startAantal - 1) % maxAantal + 1;
         }
 
         writeNumberToSegment(0, aantalGekozen);
@@ -137,9 +135,8 @@ void computerBeurt(int startAantal, int maxAantal) {
         writeNumberToSegment(3, startAantal % 10);
        // _delay_ms(20000);
         spelerBeurt(startAantal, maxAantal);
-    }
+    }  
 }
-
 
 int main() {
     initUSART();
@@ -168,16 +165,8 @@ int main() {
 
     while (startAantal > 0) {
         spelerBeurt(startAantal, maxAantal);
-        if (startAantal <= 0) {
-            printf("Speler heeft gewonnen!\n");
-            break;
-        }
 
         computerBeurt(startAantal, maxAantal);
-        if (startAantal <= 0) {
-            printf("Computer heeft gewonnen!\n");
-            break;
-        }
     }
 
     return 0;

@@ -54,21 +54,31 @@ void updateBurst() {
 
 void updateParameters() {
     currentSpeed += gravity - burst / 5;
+    if (currentSpeed < 0) {
+        currentSpeed = 0;
+    }
     distance -= currentSpeed;
+    if (distance < 0) {
+        distance = 0;
+    }
     fuelReserve -= burst;
 }
 
-void updateDisplay() {
 
+
+void updateDisplay() {
     if (distance <= 0) {
         safe = 0; 
         distance = 0; 
-        
     }
     if (burst == 0) {
         currentSpeed -= gravity / 5; 
+        if (currentSpeed < 0) {
+            currentSpeed = 0;
+        }
     }
 }
+
 
 void showParametersOnSerial() {
     printf("Afstand: %d m\n", distance);
@@ -134,7 +144,7 @@ void checkWin() {
 
     // Als we verliezen
     if (distance <= 0 || fuelReserve <= 0) {
-        safe = 1;
+        safe = 0;
         win = 0;
     } 
     

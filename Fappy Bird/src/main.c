@@ -71,9 +71,24 @@ void lightShow() {
 
 // Functie om de gebruiker de snelheid van de obstakels te laten kiezen
 void spelerNiveau() {
-    printf("Draai aan de potentiometer");
+    printf("Draai aan de potentiometer\n");
 
+    int level = 0; // Variabele om het gekozen niveau op te slaan
+
+    while (!isAnyButtonPressed()) {
+        // Lees de waarde van de potentiometer en converteer deze naar een niveau (1-10)
+        level = (readPotentiometer() * 10) / 1024; // Converteer de waarde naar een niveau tussen 0 en 10
+        // Toon het niveau op het LED-display
+        writeNumber(level);
+    }
+
+    // Wacht op knopdruk om het spel te starten
+    waitForButtonPress();
+
+    gameStarted = 1; // Markeer het spel als gestart
+    // Ga verder met het spel...
 }
+
 
 
 
@@ -83,9 +98,13 @@ void spelerNiveau() {
 
 int main() {
     initUSART();
+    initDisplay(); 
+
     enableAllLeds();
     lightDownAllLeds();
     enableAllButtons();
+
+    spelerNiveau();
 
     lightShow();
 

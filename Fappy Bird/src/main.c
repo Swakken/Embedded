@@ -25,7 +25,7 @@
 #define NUM_LEDS 4
 
 
-void displayLightShow() {
+int displayLightShow() {
     for (uint8_t i = 0; i < 4; i++) {
         lightUpLed(i);
         _delay_ms(200);
@@ -33,7 +33,8 @@ void displayLightShow() {
         _delay_ms(200);
 
         if (buttonPushed(PC1) || buttonPushed(PC2) || buttonPushed(PC3)) {
-            return 1;
+            lightDownAllLeds();  // Zet alle LEDs uit als er op een knop wordt gedrukt
+            return 1; // Stop de lichtshow
         }
     }
     lightUpAllLeds();
@@ -44,30 +45,31 @@ void displayLightShow() {
 }
 
 int kiesLevel() {
-    printf("Draai aan de potentiometer om de snelheid van de obstalkens te bepalen.\n");
+    int level = 1;
+    int potValue;
 
-    int level = 0;
+    printf("Draai aan de potentiometer om het niveau te kiezen.\n");
+
     while (1) {
-        int potValue = readPotentiometer();
+        potValue = readPotentiometer();
+
         level = (potValue / 102) + 1;
         if (level > 10) {
             level = 10;
         }
 
         writeNumber(level);
+        _delay_ms(100);
 
         if (buttonPushed(PC0) || buttonPushed(PC1) || buttonPushed(PC2)) {
             printf("Niveau gekozen: %d\n", level);
             break;
         }
-
-        _delay_ms(100);
     }
     return level;
 }
 
-
-
+    
 int main(void) {
     initUSART();
     enableAllLeds();
@@ -76,22 +78,25 @@ int main(void) {
     startPotentiometer();
     initDisplay();
 
+    int buttonPressed = 0;
+
     printf("Druk op een willekeurige button om het spel te starten.\n");
 
     while (1) {
-        displayLightShow();
-
-        if (buttonPushed(PC1) || buttonPushed(PC2) || buttonPushed(PC3)) {
-            
-            printf("Het spel is gestart\n");
+        if (!buttonPressed) { // Als er nog geen knop is gedrukt
+            displayLightShow(); // Blijf de lichtshow tonen
         }
 
-        if (buttonPushed(PC1) || buttonPushed(PC2) || buttonPushed(PC3)) {
+        if (!buttonPressed && (buttonPushed(PC1) || buttonPushed(PC2) || buttonPushed(PC3))) {
+            lightDownAllLeds();
+            printf("Het spel is gestart\n");
+            buttonPressed = 1;
+            _delay_ms(100);
+        } else if (buttonPressed == 1 && (buttonPushed(PC1) || buttonPushed(PC2) || buttonPushed(PC3))) {
             int level = kiesLevel();
             printf("Starten met niveau: %d\n", level);
             break;
         }
-       
     }
     return 0;
 }

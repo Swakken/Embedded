@@ -33,8 +33,8 @@ int displayLightShow() {
         _delay_ms(200);
 
         if (buttonPushed(PC1) || buttonPushed(PC2) || buttonPushed(PC3)) {
-            lightDownAllLeds();  // Zet alle LEDs uit als er op een knop wordt gedrukt
-            return 1; // Stop de lichtshow
+            lightDownAllLeds();
+            return 1;
         }
     }
     lightUpAllLeds();
@@ -43,6 +43,9 @@ int displayLightShow() {
 
     return 0;
 }
+
+
+// Ik moet echt 2 rondjes draaien aan de potentiometer om 1 getal hoger of lager te krijgen? 
 
 int kiesLevel() {
     int level = 1;
@@ -83,8 +86,8 @@ int main(void) {
     printf("Druk op een willekeurige button om het spel te starten.\n");
 
     while (1) {
-        if (!buttonPressed) { // Als er nog geen knop is gedrukt
-            displayLightShow(); // Blijf de lichtshow tonen
+        if (!buttonPressed) {
+            displayLightShow();
         }
 
         if (!buttonPressed && (buttonPushed(PC1) || buttonPushed(PC2) || buttonPushed(PC3))) {

@@ -43,23 +43,55 @@ void displayLightShow() {
     return 0;
 }
 
+int kiesLevel() {
+    printf("Draai aan de potentiometer om de snelheid van de obstalkens te bepalen.\n");
+
+    int level = 0;
+    while (1) {
+        int potValue = readPotentiometer();
+        level = (potValue / 102) + 1;
+        if (level > 10) {
+            level = 10;
+        }
+
+        writeNumber(level);
+
+        if (buttonPushed(PC0) || buttonPushed(PC1) || buttonPushed(PC2)) {
+            printf("Niveau gekozen: %d\n", level);
+            break;
+        }
+
+        _delay_ms(100);
+    }
+    return level;
+}
+
+
 
 int main(void) {
     initUSART();
-    enableAllButtons();
-    initDisplay();
     enableAllLeds();
     lightDownAllLeds();
     enableAllButtons();
+    startPotentiometer();
+    initDisplay();
+
+    printf("Druk op een willekeurige button om het spel te starten.\n");
 
     while (1) {
         displayLightShow();
 
         if (buttonPushed(PC1) || buttonPushed(PC2) || buttonPushed(PC3)) {
+            
             printf("Het spel is gestart\n");
+        }
+
+        if (buttonPushed(PC1) || buttonPushed(PC2) || buttonPushed(PC3)) {
+            int level = kiesLevel();
+            printf("Starten met niveau: %d\n", level);
             break;
         }
+       
     }
-
     return 0;
 }

@@ -74,11 +74,10 @@ int kiesLevel() {
 }
 
 // Hoe zorg ik er nu voor dat de functies flappyBird en obstakels tegelijk kunnen werken? 
- 
+// Moet je hiervoor een timer aanmaken zodat deze functies kunnen samenwerken? 
 
 void flappyBird() {
     while (1) {
-
         // Het bovenste horizontale segment
         drawLine(0, 0); // 0 komt overeen met 0xFE in LINE_MAP voor het bovenste segment
         _delay_ms(500);
@@ -134,6 +133,30 @@ void obstakels() {
     }
 }
 
+volatile int paused = 0;
+
+void pause() {
+    if (buttonPushed(PC2)) {
+        paused = !paused;
+        while (buttonPushed(PC2)); // Wacht tot de knop wordt losgelaten
+        _delay_ms(100); // Debounce delay
+        if (paused) {
+            printf("Gepauzeerd\n");
+            lightDownAllLeds();
+            clearDisplay(); // Voeg deze regel toe om de display uit te zetten
+        } else {
+            printf("Hervat\n");
+        }
+    }
+}
+
+void clearDisplay() {
+    for (int i = 0; i < 4; i++) {
+        drawLine(i, -1); // Assuming -1 clears the display line
+    }
+}
+
+
 
 
 
@@ -171,10 +194,14 @@ int main(void) {
     printf("Gebruik button 1 om de flappy bird langs de opstakels te laten vliegen\n");
 
     while (1) {
-        obstakels();
-        _delay_ms(500);
-        flappyBird();
+        pause(); // Controleer de pauzetoestand
 
+        if (!paused) {
+            clearDisplay();
+        } else {
+            obstakels();
+            flappyBird();
+        }
     }
     
 

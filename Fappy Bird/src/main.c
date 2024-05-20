@@ -82,6 +82,7 @@ int main(void) {
     initDisplay();
 
     int buttonPressed = 0;
+    int level;
 
     printf("Druk op een willekeurige button om het spel te starten.\n");
 
@@ -101,5 +102,10 @@ int main(void) {
             break;
         }
     }
+    
+    printf("Het spel begint nu!\n");
+    printf("Gebruik button 1 om de flappy bird langs de opstakels te laten vliegen\n");
+
+
     return 0;
 }

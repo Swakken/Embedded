@@ -48,7 +48,6 @@ int displayLightShow() {
 // Ik moet echt 2 rondjes draaien aan de potentiometer om 1 getal hoger of lager te krijgen? 
 
 int kiesLevel() {
-    int level = 1;
     int potValue;
 
     printf("Draai aan de potentiometer om het niveau te kiezen.\n");
@@ -73,6 +72,68 @@ int kiesLevel() {
 }
 
     
+
+void obstakels() {
+    while (1) {
+        // Display 1: Bovenste segment
+        drawLine(1, 0); // 0 komt overeen met 0xFE voor het bovenste segment
+        _delay_ms(500);
+        writeNumberToSegment(1, 0xFF); // Zet alle segmenten uit op display 1
+        _delay_ms(500);
+
+        // Display 1: Middelste segment
+        drawLine(1, 6); // 6 komt overeen met 0xBF voor het middelste segment
+        _delay_ms(500);
+        writeNumberToSegment(1, 0xFF); // Zet alle segmenten uit op display 1
+        _delay_ms(500);
+
+        // Display 1: Onderste segment
+        drawLine(1, 3); // Aannemend dat 3 het onderste segment is
+        _delay_ms(500);
+        writeNumberToSegment(1, 0xFF); // Zet alle segmenten uit op display 1
+        _delay_ms(500);
+
+        // Display 2: Bovenste segment
+        drawLine(2, 0); // 0 komt overeen met 0xFE voor het bovenste segment
+        _delay_ms(500);
+        writeNumberToSegment(2, 0xFF); // Zet alle segmenten uit op display 2
+        _delay_ms(500);
+
+        // Display 2: Middelste segment
+        drawLine(2, 6); // 6 komt overeen met 0xBF voor het middelste segment
+        _delay_ms(500);
+        writeNumberToSegment(2, 0xFF); // Zet alle segmenten uit op display 2
+        _delay_ms(500);
+
+        // Display 2: Onderste segment
+        drawLine(2, 3); // Aannemend dat 3 het onderste segment is
+        _delay_ms(500);
+        writeNumberToSegment(2, 0xFF); // Zet alle segmenten uit op display 2
+        _delay_ms(500);
+
+        // Display 3: Bovenste segment
+        drawLine(3, 0); // 0 komt overeen met 0xFE voor het bovenste segment
+        _delay_ms(500);
+        writeNumberToSegment(3, 0xFF); // Zet alle segmenten uit op display 3
+        _delay_ms(500);
+
+        // Display 3: Middelste segment
+        drawLine(3, 6); // 6 komt overeen met 0xBF voor het middelste segment
+        _delay_ms(500);
+        writeNumberToSegment(3, 0xFF); // Zet alle segmenten uit op display 3
+        _delay_ms(500);
+
+        // Display 3: Onderste segment
+        drawLine(3, 3); // Aannemend dat 3 het onderste segment is
+        _delay_ms(500);
+        writeNumberToSegment(3, 0xFF); // Zet alle segmenten uit op display 3
+        _delay_ms(500);
+    }
+}
+
+
+
+
 int main(void) {
     initUSART();
     enableAllLeds();
@@ -82,7 +143,7 @@ int main(void) {
     initDisplay();
 
     int buttonPressed = 0;
-    int level;
+
 
     printf("Druk op een willekeurige button om het spel te starten.\n");
 
@@ -105,6 +166,12 @@ int main(void) {
     
     printf("Het spel begint nu!\n");
     printf("Gebruik button 1 om de flappy bird langs de opstakels te laten vliegen\n");
+
+    while (1)
+    {
+        obstakels();
+    }
+    
 
 
     return 0;

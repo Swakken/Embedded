@@ -198,10 +198,11 @@ int main(void) {
         pause(); // Controleer de pauzetoestand
 
         if (!paused) {
-            clearDisplay();
-        } else {
             obstakels();
             flappyBird();
+
+        } else {
+            clearDisplay();
         }
     }
     

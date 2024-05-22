@@ -3,6 +3,7 @@
 #include <util/delay.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <avr/interrupt.h>
 
 #include <usart.h>
 

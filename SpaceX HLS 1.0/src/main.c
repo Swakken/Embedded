@@ -31,6 +31,17 @@ uint32_t teller = 0;
 int win = 0; // Als je gewonnen bent
 
 
+ISR(PCINT1_vect){
+  // interrupt voor onze button
+  if (buttonPushed(1) && fuelReserve > 0){
+    burst++;
+    printf("\n::: BURST ++ :::\n");
+    if (burst <= 50) burst = 50;
+    } else {
+      burst = 0;
+    }
+}
+
 void handleBurst() {
     if (buttonPushed(BUTTON_PIN2)) {
         if (fuelReserve > 50) {

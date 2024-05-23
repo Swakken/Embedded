@@ -42,6 +42,52 @@ ISR(PCINT1_vect){
     }
 }
 
+void showParameters() {
+    // Leds aansturen voor brandstof
+    showLeds();
+    // Led display toont hoogte in meter
+    writeNumber(distance);
+
+}
+
+// Gegevens worden gedeeld in de seriële terminal
+void showParametersOnSerial() {
+    printf("Afstand: %d m\n", distance);
+    printf("Snelheid: %d m/s\n", currentSpeed);
+    printf("Brandstof: %d liter\n\n", fuelReserve);
+}
+
+
+void updateBurst() {
+    // Als je op de button drukt, verhoogt de burst
+    // Burst != 50 liter per seconde
+  if (buttonPushed(2) && fuelReserve > 0) {
+    burst++;
+    if (burst >= 50) burst = 50;
+  } else {
+    burst = 0;
+  }
+}
+
+void updateParameters() {
+
+    currentSpeed += gravity - burst / 5;
+    distance -= currentSpeed;
+    fuelReserve -= burst;
+
+    /*
+    currentSpeed += gravity - burst / 5;
+    if (currentSpeed < 0) {
+        currentSpeed = 0;
+    }
+    distance -= currentSpeed;
+    if (distance < 0) {
+        distance = 0;
+    }
+    fuelReserve -= burst;
+    */
+}
+
 void handleBurst() {
     if (buttonPushed(BUTTON_PIN2)) {
         if (fuelReserve > 50) {
@@ -54,29 +100,6 @@ void handleBurst() {
     }
 }
 
-void updateBurst() {
-  if (buttonPushed(2) && fuelReserve > 0) {
-    burst++;
-    if (burst >= 50) burst = 50;
-  } else {
-    burst = 0;
-  }
-}
-
-void updateParameters() {
-    currentSpeed += gravity - burst / 5;
-    if (currentSpeed < 0) {
-        currentSpeed = 0;
-    }
-    distance -= currentSpeed;
-    if (distance < 0) {
-        distance = 0;
-    }
-    fuelReserve -= burst;
-}
-
-
-
 void updateDisplay() {
     if (distance <= 0) {
         safe = 0; 
@@ -87,33 +110,6 @@ void updateDisplay() {
         if (currentSpeed < 0) {
             currentSpeed = 0;
         }
-    }
-}
-
-
-void showParametersOnSerial() {
-    printf("Afstand: %d m\n", distance);
-    printf("Snelheid: %d m/s\n", currentSpeed);
-    printf("Brandstof: %d liter\n\n", fuelReserve);
-}
-
-void showParameters() {
-    writeNumber(distance);
-    showLeds();
-}
-
-ISR(TIMER0_COMPA_vect) {
-    teller++;
-
-    if (teller % 250 == 0) {
-        handleBurst();
-        updateParameters();
-        showParametersOnSerial();
-        showParameters();
-    }
-
-    if ((teller % 25) == 0) {
-        updateBurst();
     }
 }
 
@@ -161,6 +157,22 @@ void checkWin() {
     
 }   
 
+
+ISR(TIMER0_COMPA_vect) {
+    teller++;
+
+    if (teller % 250 == 0) {
+        handleBurst();
+        updateParameters();
+        showParametersOnSerial();
+        showParameters();
+    }
+
+    if ((teller % 25) == 0) {
+        updateBurst();
+    }
+}
+
 void startUp() {
     
     enableAllLeds();
@@ -170,6 +182,7 @@ void startUp() {
     enableButton(1);
 
     // Timer initialiseren
+    // Mode of operation is CTC
     TCCR0A &= ~_BV(WGM00);
     TCCR0A |= _BV(WGM01);
     TCCR0B &= ~_BV(WGM02);
@@ -184,8 +197,8 @@ void startUp() {
     // OCRA intterupt
     TIMSK0 |= _BV(OCIE0A);
 
+    // Interrupt enabelen
     sei();
-
 }
 
 int main() {
@@ -197,5 +210,12 @@ int main() {
         checkWin();
     }
 
-    printf("Spel is afgelopen\n");   
+    printf("Spel is afgelopen\n");
+    if (win) {
+        printf("Je hebt gewonnen!\n");
+    }
+    else
+        printf("Je hebt verloren!\n");
+    return 0; 
+
 }

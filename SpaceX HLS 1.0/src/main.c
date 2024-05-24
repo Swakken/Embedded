@@ -26,7 +26,7 @@ int currentSpeed = 100;
 int distance = 9999; 
 int fuelReserve = 1500; // Brandstof in liter
 int safe = 1; // Als alles goed gaat dan blijft je in de while loop
-float burst = 0;
+int burst = 0;
 uint32_t teller = 0;
 int win = 0; // Als je gewonnen bent
 
@@ -88,17 +88,6 @@ void updateParameters() {
     */
 }
 
-void handleBurst() {
-    if (buttonPushed(BUTTON_PIN2)) {
-        if (fuelReserve > 50) {
-            burst = 50; 
-        } else {
-            burst = fuelReserve;
-        }
-    } else {
-        burst = 0;
-    }
-}
 
 void updateDisplay() {
     if (distance <= 0) {
@@ -162,7 +151,6 @@ ISR(TIMER0_COMPA_vect) {
     teller++;
 
     if (teller % 250 == 0) {
-        handleBurst();
         updateParameters();
         showParametersOnSerial();
         showParameters();

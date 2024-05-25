@@ -25,71 +25,71 @@
 #define DELAY_TIME 200
 #define NUM_LEDS 4
 
-int birdPos;
-int globalIndex;
-
-volatile int gameOver = 0;
-volatile int gameOverNext = 0;
-
-// Toegevoegde globale array voor pijpen
-int pipeArray[9999];
-
-}
+int level = 1;
 
 
-    // Check elke 100ms (10 interrupts)
-    if (globalIndex % 10 == 0) {
-        drawPipes(pipeArray, 1);
+int displayLightShow() {
+    for (uint8_t i = 0; i < 4; i++) {
+        lightUpLed(i);
+        _delay_ms(200);
+        lightDownLed(i);
+        _delay_ms(200);
+
+        if (buttonPushed(PC1) || buttonPushed(PC2) || buttonPushed(PC3)) {
+            lightDownAllLeds();
+            return 1;
+        }
     }
+    lightUpAllLeds();
+    _delay_ms(500);
+    lightDownAllLeds();
 
-    // Pauzeer spel indien nodig
-    pause();
+    return 0;
 }
+
+
+// Ik moet echt 2 rondjes draaien aan de potentiometer om 1 getal hoger of lager te krijgen? 
+
+int kiesLevel() {
+    int potValue;
 
     printf("Draai aan de potentiometer om het niveau te kiezen.\n");
 
+    while (1) {
+        potValue = readPotentiometer();
 
-void displayLightShow(){
-    while (!(buttonPushed(PC1) || buttonPushed(PC2) || buttonPushed(PC3))) {
-        // Effect 1: Willekeurige lijnen
-        for (int i = 0; i < 10; i++) {
-            drawLine(rand() % 4, rand() % 7);
-            _delay_ms(100);
+        level = (potValue / 102) + 1;
+        if (level > 10) {
+            level = 10;
+        }
+
+        writeNumber(level);
+        _delay_ms(100);
+
+        if (buttonPushed(PC0) || buttonPushed(PC1) || buttonPushed(PC2)) {
+            printf("Niveau gekozen: %d\n", level);
+            break;
         }
     }
+    return level;
 }
 
-int kiesLevel(){
-    int value;
-    while (!(buttonPushed(PC1) || buttonPushed(PC2) || buttonPushed(PC3))) {
-        ADCSRA |= (1<<ADSC);
-        loop_until_bit_is_clear(ADCSRA,ADSC);
-        value = ADC / 100;
-        writeNumber(value);
-    }
-  
-    printf("Gekozen Level:%d\n", value);
-    return value;
-}
+// Hoe zorg ik er nu voor dat de functies flappyBird en obstakels tegelijk kunnen werken? 
+// Moet je hiervoor een timer aanmaken zodat deze functies kunnen samenwerken? 
 
-void flappyBird(int level){
-    switch (level) {
-        case 0:
-            drawLine(0, 3); // 3 komt overeen met 0xBF in LINE_MAP voor het middelste segment
-            break;
-        case 1:
-            drawLine(0, 6); // 6 komt overeen met 0xBF in LINE_MAP voor het middelste segment
-            break;
-        case 2:
-            drawLine(0, 0); // 0 komt overeen met 0xFE in LINE_MAP voor het bovenste segment
-            break;
-        default:
-            break;
-    }
-}
+void flappyBird() {
+    while (1) {
+        // Het bovenste horizontale segment
+        drawLine(0, 0); // 0 komt overeen met 0xFE in LINE_MAP voor het bovenste segment
+        _delay_ms(500);
 
+        // Het middelste horizontale segment
+        drawLine(0, 6); // 6 komt overeen met 0xBF in LINE_MAP voor het middelste segment
+        _delay_ms(500);
 
-
+        // Het onderste horizontale segment
+        drawLine(0, 3); // 3 komt overeen met 0xBF in LINE_MAP voor het middelste segment
+        _delay_ms(500);
 
     }
 }
@@ -153,9 +153,10 @@ void pause() {
 
 void clearDisplay() {
     for (int i = 0; i < 4; i++) {
-        drawLine(i, 0); // Assuming 0 clears the display line by turning off all segments
+        drawLine(i, -1); // Assuming -1 clears the display line
     }
 }
+
 
 
 
@@ -168,7 +169,7 @@ int main(void) {
     startPotentiometer();
     initDisplay();
 
-    sei(); // Globaal interrupts inschakelen
+    int buttonPressed = 0;
 
 
     printf("Druk op een willekeurige button om het spel te starten.\n");

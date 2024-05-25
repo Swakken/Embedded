@@ -18,7 +18,6 @@
 
 #define BUZZER_PIN PB1
 #define DELAY_TIME 200
-#define NUM_LEDS 4
 
 int level = 1;
 
@@ -32,16 +31,12 @@ void displayLightShow(){
   _delay_ms(500);
 }
 
-
-
-// Ik moet echt 2 rondjes draaien aan de potentiometer om 1 getal hoger of lager te krijgen? 
-
 int kiesLevel() {
     int potValue;
 
     printf("Draai aan de potentiometer om het niveau te kiezen.\n");
 
-    while (1) {
+    while (!(buttonPushed(PC1) || buttonPushed(PC2) || buttonPushed(PC3))) {
         potValue = readPotentiometer();
 
         level = (potValue / 102) + 1;
@@ -50,15 +45,12 @@ int kiesLevel() {
         }
 
         writeNumber(level);
-        _delay_ms(100);
-
-        if (buttonPushed(PC0) || buttonPushed(PC1) || buttonPushed(PC2)) {
-            printf("Niveau gekozen: %d\n", level);
-            break;
-        }
+        _delay_ms(500);
     }
+    printf("Het spel begint nu op niveau %d!\n", level);
     return level;
 }
+
 
 void flappyBird(int level){
   switch (level) {
@@ -151,25 +143,23 @@ int main(void) {
     startPotentiometer();
     initDisplay();
 
-    displayLightShow();
+    displayLightShow(); // Toon de lichtshow en wacht op knopdruk om te starten
 
-    
-    printf("Het spel begint nu!\n");
-    printf("Gebruik button 1 om de flappy bird langs de opstakels te laten vliegen\n");
+    // Voeg hier de functieaanroep toe om het niveau te kiezen
+    int chosenLevel = kiesLevel();  // Laat de speler het niveau kiezen na de lichtshow
+
+    printf("Gebruik button 1 om de flappy bird langs de obstakels te laten vliegen\n");
 
     while (1) {
         pause(); // Controleer de pauzetoestand
 
         if (!paused) {
-            obstakels();
-            // flappyBird();
-
+            obstakels();  // Laat obstakels zien die de speler moet ontwijken
+            // Hier kan je ook de `flappyBird(chosenLevel);` aanroepen afhankelijk van hoe je het spel hebt gestructureerd
         } else {
-            clearDisplay();
+            clearDisplay();  // Zet het scherm uit als het spel gepauzeerd is
         }
     }
-    
-
 
     return 0;
 }

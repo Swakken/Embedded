@@ -74,24 +74,20 @@ int kiesLevel() {
     return level;
 }
 
-// Hoe zorg ik er nu voor dat de functies flappyBird en obstakels tegelijk kunnen werken? 
-// Moet je hiervoor een timer aanmaken zodat deze functies kunnen samenwerken? 
-
-void flappyBird() {
-    while (1) {
-        // Het bovenste horizontale segment
-        drawLine(0, 0); // 0 komt overeen met 0xFE in LINE_MAP voor het bovenste segment
-        _delay_ms(500);
-
-        // Het middelste horizontale segment
-        drawLine(0, 6); // 6 komt overeen met 0xBF in LINE_MAP voor het middelste segment
-        _delay_ms(500);
-
-        // Het onderste horizontale segment
-        drawLine(0, 3); // 3 komt overeen met 0xBF in LINE_MAP voor het middelste segment
-        _delay_ms(500);
-
-    }
+void flappyBird(int level){
+  switch (level) {
+    case 0:
+      drawLine(0, 3); // 3 komt overeen met 0xBF in LINE_MAP voor het middelste segment
+      break;
+    case 1:
+      drawLine(0,6); // 6 komt overeen met 0xBF in LINE_MAP voor het middelste segment
+      break;
+    case 2:
+      drawLine(0, 0); // 0 komt overeen met 0xFE in LINE_MAP voor het bovenste segment
+      break;
+    default:
+      break;
+  }
 }
 
 void obstakels() {

@@ -20,15 +20,18 @@
 #define DELAY_TIME 200
 
 int level = 1;
+volatile int birdPositionIndex = 0;
+const int birdPositions[] = {0, 3, 6};
 
-void displayLightShow(){
-  printf("Druk op een willekeurige button om het spel te starten.\n");
-  
-  while (!(buttonPushed(PC1) || buttonPushed(PC2) || buttonPushed(PC3))) {
-    drawLine(rand() % 4, rand() % 7);
-    _delay_ms(100);
-  }
-  _delay_ms(500);
+
+void displayLightShow() {
+    printf("Druk op een willekeurige button om het spel te starten.\n");
+    
+    while (!(buttonPushed(PC1) || buttonPushed(PC2) || buttonPushed(PC3))) {
+        drawLine(rand() % 4, rand() % 7);
+        _delay_ms(100);
+    }
+    _delay_ms(500);
 }
 
 int kiesLevel() {
@@ -52,21 +55,30 @@ int kiesLevel() {
 }
 
 
-void flappyBird(int level){
-  switch (level) {
-    case 0:
-      drawLine(0, 3); // 3 komt overeen met 0xBF in LINE_MAP voor het middelste segment
-      break;
-    case 1:
-      drawLine(0,6); // 6 komt overeen met 0xBF in LINE_MAP voor het middelste segment
-      break;
-    case 2:
-      drawLine(0, 0); // 0 komt overeen met 0xFE in LINE_MAP voor het bovenste segment
-      break;
-    default:
-      break;
-  }
+void flappyBird(int level, int birdPosition) {
+    clearDisplay();  // Maak het display schoon voordat de nieuwe positie getekend wordt
+    drawLine(0, birdPosition);
 }
+
+// Timer1 overflow interrupt service routine
+ISR(TIMER1_COMPA_vect) {
+    birdPositionIndex++;
+    if (birdPositionIndex > 2) { // Reset de index als deze de lengte van de array overschrijdt
+        birdPositionIndex = 0;
+    }
+    flappyBird(level, birdPositions[birdPositionIndex]);  // Geef zowel level als birdPosition door
+}
+
+
+void initTimer1() {
+    TCCR1B |= (1 << WGM12); // Configureer timer 1 voor CTC modus
+    TIMSK1 |= (1 << OCIE1A); // Schakel CTC interrupt in
+    sei(); // Schakel globale interrupts in
+    OCR1A = 62499; // Stel de CTC vergelijkingswaarde in voor een langzamere frequentie, ongeveer 0.25Hz bij een 1MHz AVR klok met een prescaler van 64
+    TCCR1B |= (1 << CS10) | (1 << CS11); // Start de timer op Fcpu/64
+}
+
+
 
 void obstakels() {
     while (1) {
@@ -108,31 +120,11 @@ void obstakels() {
     }
 }
 
-volatile int paused = 0;
-
-void pause() {
-    if (buttonPushed(PC2)) {
-        paused = !paused;
-        while (buttonPushed(PC2)); // Wacht tot de knop wordt losgelaten
-        _delay_ms(100); // Debounce delay
-        if (paused) {
-            printf("Gepauzeerd\n");
-            lightDownAllLeds();
-            clearDisplay(); // Voeg deze regel toe om de display uit te zetten
-        } else {
-            printf("Hervat\n");
-        }
-    }
-}
-
 void clearDisplay() {
     for (int i = 0; i < 4; i++) {
         drawLine(i, -1); // Assuming -1 clears the display line
     }
 }
-
-
-
 
 
 int main(void) {
@@ -150,15 +142,10 @@ int main(void) {
 
     printf("Gebruik button 1 om de flappy bird langs de obstakels te laten vliegen\n");
 
-    while (1) {
-        pause(); // Controleer de pauzetoestand
+    initTimer1();  // Start de timer pas na het kiezen van het niveau
 
-        if (!paused) {
-            obstakels();  // Laat obstakels zien die de speler moet ontwijken
-            // Hier kan je ook de `flappyBird(chosenLevel);` aanroepen afhankelijk van hoe je het spel hebt gestructureerd
-        } else {
-            clearDisplay();  // Zet het scherm uit als het spel gepauzeerd is
-        }
+    while (1) {
+        // Hoofdprogramma blijft hier draaien, interrupts zorgen voor de flappy bird
     }
 
     return 0;

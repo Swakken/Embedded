@@ -26,6 +26,12 @@ const int birdPositions[] = {0, 3, 6};
 #define UP_DELAY_MS 200
 #define DOWN_DELAY_MS 500
 
+void clearDisplay() {
+    for (int i = 0; i < 4; i++) {
+        drawLine(i, -1);
+    }
+}
+
 void displayLightShow() {
     printf("Druk op een willekeurige button om het spel te starten.\n");
     
@@ -54,8 +60,10 @@ int kiesLevel() {
     }
     printf("Het spel begint nu op niveau %d!\n", level);
     return level;
+    _delay_ms(500);
 }
 
+// Flappy Bird
 
 void flappyBird(int level, int birdPosition) {
     clearDisplay();  // Maak het display schoon voordat de nieuwe positie getekend wordt
@@ -75,7 +83,11 @@ void checkButtonAndMoveBird() {
     static uint8_t buttonPressed = 0;
     if (buttonPushed(BUTTON_PIN1)) { // Check of de button wordt ingedrukt
         if (buttonPressed == 0) { // Als de knop net is ingedrukt
-            birdPositionIndex = (birdPositionIndex > 0) ? birdPositionIndex - 1 : 0; // Beweeg de vogel omhoog, tenzij deze al bovenaan is
+            if (birdPositionIndex == 2) { // Als de vogel op segment 6 zit
+                birdPositionIndex = 0; // Zet de vogel terug naar segment 0
+            } else {
+                birdPositionIndex++; // Verplaats de vogel één segment omhoog
+            }
             flappyBird(level, birdPositions[birdPositionIndex]);
             printf("De vogel vliegt omhoog!\n"); // Laat een bericht zien in de terminal
             _delay_ms(UP_DELAY_MS); // Debounce delay
@@ -84,6 +96,7 @@ void checkButtonAndMoveBird() {
     } else {
         if (buttonPressed == 1) { // Als de knop net is losgelaten
             buttonPressed = 0;
+            _delay_ms(2000); // Voeg een extra vertraging van 2 seconden toe voordat de vogel naar beneden beweegt
         } else {
             _delay_ms(DOWN_DELAY_MS); // Laat de vogel na enige tijd naar beneden vliegen
             birdPositionIndex = (birdPositionIndex < 2) ? birdPositionIndex + 1 : 2; // Beweeg de vogel naar beneden, tenzij deze al onderaan is
@@ -91,6 +104,14 @@ void checkButtonAndMoveBird() {
         }
     }
 }
+
+
+
+
+
+
+
+// Obstakels
 
 void obstakels() {
     while (1) {
@@ -132,11 +153,7 @@ void obstakels() {
     }
 }
 
-void clearDisplay() {
-    for (int i = 0; i < 4; i++) {
-        drawLine(i, -1);
-    }
-}
+
 
 
 int main(void) {

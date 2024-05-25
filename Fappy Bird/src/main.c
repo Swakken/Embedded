@@ -20,9 +20,11 @@
 #define DELAY_TIME 200
 
 int level = 1;
-volatile int birdPositionIndex = 0;
+volatile int birdPositionIndex = 1; // Start altijd in het midden
 const int birdPositions[] = {0, 3, 6};
 
+#define UP_DELAY_MS 200
+#define DOWN_DELAY_MS 500
 
 void displayLightShow() {
     printf("Druk op een willekeurige button om het spel te starten.\n");
@@ -69,16 +71,26 @@ ISR(TIMER1_COMPA_vect) {
     flappyBird(level, birdPositions[birdPositionIndex]);  // Geef zowel level als birdPosition door
 }
 
-
-void initTimer1() {
-    TCCR1B |= (1 << WGM12); // Configureer timer 1 voor CTC modus
-    TIMSK1 |= (1 << OCIE1A); // Schakel CTC interrupt in
-    sei(); // Schakel globale interrupts in
-    OCR1A = 62499; // Stel de CTC vergelijkingswaarde in voor een langzamere frequentie, ongeveer 0.25Hz bij een 1MHz AVR klok met een prescaler van 64
-    TCCR1B |= (1 << CS10) | (1 << CS11); // Start de timer op Fcpu/64
+void checkButtonAndMoveBird() {
+    static uint8_t buttonPressed = 0;
+    if (buttonPushed(BUTTON_PIN1)) { // Check of de button wordt ingedrukt
+        if (buttonPressed == 0) { // Als de knop net is ingedrukt
+            birdPositionIndex = (birdPositionIndex > 0) ? birdPositionIndex - 1 : 0; // Beweeg de vogel omhoog, tenzij deze al bovenaan is
+            flappyBird(level, birdPositions[birdPositionIndex]);
+            printf("De vogel vliegt omhoog!\n"); // Laat een bericht zien in de terminal
+            _delay_ms(UP_DELAY_MS); // Debounce delay
+            buttonPressed = 1;
+        }
+    } else {
+        if (buttonPressed == 1) { // Als de knop net is losgelaten
+            buttonPressed = 0;
+        } else {
+            _delay_ms(DOWN_DELAY_MS); // Laat de vogel na enige tijd naar beneden vliegen
+            birdPositionIndex = (birdPositionIndex < 2) ? birdPositionIndex + 1 : 2; // Beweeg de vogel naar beneden, tenzij deze al onderaan is
+            flappyBird(level, birdPositions[birdPositionIndex]);
+        }
+    }
 }
-
-
 
 void obstakels() {
     while (1) {
@@ -122,7 +134,7 @@ void obstakels() {
 
 void clearDisplay() {
     for (int i = 0; i < 4; i++) {
-        drawLine(i, -1); // Assuming -1 clears the display line
+        drawLine(i, -1);
     }
 }
 
@@ -142,10 +154,8 @@ int main(void) {
 
     printf("Gebruik button 1 om de flappy bird langs de obstakels te laten vliegen\n");
 
-    initTimer1();  // Start de timer pas na het kiezen van het niveau
-
     while (1) {
-        // Hoofdprogramma blijft hier draaien, interrupts zorgen voor de flappy bird
+        checkButtonAndMoveBird();
     }
 
     return 0;

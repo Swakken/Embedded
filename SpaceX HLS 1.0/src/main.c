@@ -70,22 +70,9 @@ void updateBurst() {
 }
 
 void updateParameters() {
-
     currentSpeed += gravity - burst / 5;
     distance -= currentSpeed;
     fuelReserve -= burst;
-
-    /*
-    currentSpeed += gravity - burst / 5;
-    if (currentSpeed < 0) {
-        currentSpeed = 0;
-    }
-    distance -= currentSpeed;
-    if (distance < 0) {
-        distance = 0;
-    }
-    fuelReserve -= burst;
-    */
 }
 
 

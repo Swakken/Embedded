@@ -75,23 +75,14 @@ int kiesLevel() {
 
 // Flappy Bird
 
-void flappyBird(int level, int birdPosition) {
+void flappyBird(int birdPosition) {
+
     clearDisplay();  // Maak het display schoon voordat de nieuwe positie getekend wordt
-    drawLine(0, birdPosition);
-}
-
-// Timer1 overflow interrupt service routine
-ISR(TIMER1_COMPA_vect) {
-    birdPositionIndex++;
-    if (birdPositionIndex > 2) { // Reset de index als deze de lengte van de array overschrijdt
-        birdPositionIndex = 0;
+    while (1) {
+        drawLine(0, birdPosition);
     }
-    flappyBird(level, birdPositions[birdPositionIndex]);  // Geef zowel level als birdPosition door
+    
 }
-
-
-
-
 
 // Functie om een willekeurig segment te kiezen uit de obstakelPositions array
 int kiesSegment() {
@@ -129,6 +120,7 @@ void obstakels() {
 
 
 
+
 int main(void) {
     initUSART();
     enableAllLeds();
@@ -145,7 +137,8 @@ int main(void) {
     printf("Gebruik button 1 om de flappy bird langs de obstakels te laten vliegen\n");
 
     while (1) {
-        obstakels();
+
+        obstakels(); // Genereer obstakels
     }
 
     return 0;

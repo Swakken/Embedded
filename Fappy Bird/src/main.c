@@ -1,11 +1,5 @@
 // Flappy Bird Project 
 
-/*
-Ik heb dit project niet kunnen afronden door beperkte tijd en te weinig kennis van C. 
-Ik heb meerdere dagen aan dit project gewerkt en geprobeerd om het toch af te krijgen, maar het is niet gelukt.
-*/
-
-
 #include <avr/io.h>
 #include <util/delay.h>
 #include <stdio.h>

@@ -1,4 +1,11 @@
 // Flappy Bird Project 
+
+/*
+Ik heb dit project niet kunnen afronden door beperkte tijd en te weinig kennis van C. 
+Ik heb meerdere dagen aan dit project gewerkt en geprobeerd om het toch af te krijgen, maar het is niet gelukt.
+*/
+
+
 #include <avr/io.h>
 #include <util/delay.h>
 #include <stdio.h>
@@ -17,14 +24,17 @@
 #define BUTTON_PIN2 PC2
 
 #define BUZZER_PIN PB1
-#define DELAY_TIME 200
+
 
 int level = 1;
 volatile int birdPositionIndex = 1; // Start altijd in het midden
-const int birdPositions[] = {0, 3, 6};
 
-#define UP_DELAY_MS 200
-#define DOWN_DELAY_MS 500
+// 0 komt overeen met 0xFE voor het bovenste segment
+// 6 komt overeen met 0xBF voor het middelste segment
+// 3 komt overeen met voor het laagste segment
+const int birdPositions[] = {0, 3, 6};
+const int obstakelPositions[] = {0, 3, 6};
+
 
 void clearDisplay() {
     for (int i = 0; i < 4; i++) {
@@ -79,80 +89,43 @@ ISR(TIMER1_COMPA_vect) {
     flappyBird(level, birdPositions[birdPositionIndex]);  // Geef zowel level als birdPosition door
 }
 
-void checkButtonAndMoveBird() {
-    static uint8_t buttonPressed = 0;
-    if (buttonPushed(BUTTON_PIN1)) { // Check of de button wordt ingedrukt
-        if (buttonPressed == 0) { // Als de knop net is ingedrukt
-            if (birdPositionIndex == 2) { // Als de vogel op segment 6 zit
-                birdPositionIndex = 0; // Zet de vogel terug naar segment 0
-            } else {
-                birdPositionIndex++; // Verplaats de vogel één segment omhoog
-            }
-            flappyBird(level, birdPositions[birdPositionIndex]);
-            printf("De vogel vliegt omhoog!\n"); // Laat een bericht zien in de terminal
-            _delay_ms(UP_DELAY_MS); // Debounce delay
-            buttonPressed = 1;
-        }
-    } else {
-        if (buttonPressed == 1) { // Als de knop net is losgelaten
-            buttonPressed = 0;
-            _delay_ms(2000); // Voeg een extra vertraging van 2 seconden toe voordat de vogel naar beneden beweegt
-        } else {
-            _delay_ms(DOWN_DELAY_MS); // Laat de vogel na enige tijd naar beneden vliegen
-            birdPositionIndex = (birdPositionIndex < 2) ? birdPositionIndex + 1 : 2; // Beweeg de vogel naar beneden, tenzij deze al onderaan is
-            flappyBird(level, birdPositions[birdPositionIndex]);
-        }
-    }
+
+
+
+
+// Functie om een willekeurig segment te kiezen uit de obstakelPositions array
+int kiesSegment() {
+    int index = rand() % (sizeof(obstakelPositions) / sizeof(obstakelPositions[0]));
+    return obstakelPositions[index];
 }
-
-
-
-
-
-
 
 // Obstakels
-
 void obstakels() {
+    int segment = kiesSegment(); // Kies een willekeurig segment voor het obstakel
+
+    int display = 3; // Start op display 3
+
     while (1) {
-        // Display 1: Bovenste segment
-        drawLine(1, 0); // 0 komt overeen met 0xFE voor het bovenste segment
-        _delay_ms(500);
+        // Plaats het obstakel op hetzelfde segment van het huidige display
+        drawLine(display, segment);
 
-        // Display 1: Middelste segment
-        drawLine(1, 6); // 6 komt overeen met 0xBF voor het middelste segment
-        _delay_ms(500);
+        _delay_ms(1000); // Vertraag elke stap met 1000 milliseconden
 
-        // Display 1: Onderste segment
-        drawLine(1, 3); // Aannemend dat 3 het onderste segment is
-        _delay_ms(500);
+        // Verwijder het obstakel van het huidige display
+        clearDisplay(display);
 
-        // Display 2: Bovenste segment
-        drawLine(2, 0); // 0 komt overeen met 0xFE voor het bovenste segment
-        _delay_ms(500);
+        // Ga naar het volgende display
+        display--;
 
-        // Display 2: Middelste segment
-        drawLine(2, 6); // 6 komt overeen met 0xBF voor het middelste segment
-        _delay_ms(500);
+        // Als we display 0 bereiken, ga dan terug naar display 3 en plaats een nieuw obstakel
+        if (display == 0) {
+            display = 3; // Terug naar display 3
 
-        // Display 2: Onderste segment
-        drawLine(2, 3); // Aannemend dat 3 het onderste segment is
-        _delay_ms(500);
-
-        // Display 3: Bovenste segment
-        drawLine(3, 0); // 0 komt overeen met 0xFE voor het bovenste segment
-        _delay_ms(500);
-
-        // Display 3: Middelste segment
-        drawLine(3, 6); // 6 komt overeen met 0xBF voor het middelste segment
-        _delay_ms(500);
-
-        // Display 3: Onderste segment
-        drawLine(3, 3); // Aannemend dat 3 het onderste segment is
-        _delay_ms(500);
+            // Kies een nieuw willekeurig segment voor het nieuwe obstakel
+            segment = kiesSegment();
+        }
     }
 }
-
 
 
 
@@ -164,7 +137,7 @@ int main(void) {
     startPotentiometer();
     initDisplay();
 
-    displayLightShow(); // Toon de lichtshow en wacht op knopdruk om te starten
+    // displayLightShow(); // Toon de lichtshow en wacht op knopdruk om te starten
 
     // Voeg hier de functieaanroep toe om het niveau te kiezen
     int chosenLevel = kiesLevel();  // Laat de speler het niveau kiezen na de lichtshow
@@ -172,7 +145,7 @@ int main(void) {
     printf("Gebruik button 1 om de flappy bird langs de obstakels te laten vliegen\n");
 
     while (1) {
-        checkButtonAndMoveBird();
+        obstakels();
     }
 
     return 0;

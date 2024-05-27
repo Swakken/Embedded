@@ -73,16 +73,6 @@ int kiesLevel() {
     _delay_ms(500);
 }
 
-// Flappy Bird
-
-void flappyBird(int birdPosition) {
-
-    clearDisplay();  // Maak het display schoon voordat de nieuwe positie getekend wordt
-    while (1) {
-        drawLine(0, birdPosition);
-    }
-    
-}
 
 // Functie om een willekeurig segment te kiezen uit de obstakelPositions array
 int kiesSegment() {
@@ -90,25 +80,34 @@ int kiesSegment() {
     return obstakelPositions[index];
 }
 
-// Obstakels
-void obstakels() {
+
+
+// Functie om de flappy bird en obstakels op het display te tonen
+void updateGame() {
+    int birdPosition = birdPositions[birdPositionIndex]; // Haal de huidige positie van de flappy bird op
     int segment = kiesSegment(); // Kies een willekeurig segment voor het obstakel
 
     int display = 3; // Start op display 3
 
     while (1) {
+        // Plaats de flappy bird op de huidige positie
+        drawLine(0, birdPosition);
+
+        _delay_ms(500); // Vertraag elke stap met 1000 milliseconden
+
         // Plaats het obstakel op hetzelfde segment van het huidige display
         drawLine(display, segment);
 
-        _delay_ms(1000); // Vertraag elke stap met 1000 milliseconden
+        _delay_ms(1000); // Vertraag elke stap met 3000 milliseconden
 
-        // Verwijder het obstakel van het huidige display
+        // Verwijder zowel de flappy bird als het obstakel van het display
+        clearDisplay(0);
         clearDisplay(display);
 
         // Ga naar het volgende display
         display--;
 
-        // Als we display 0 bereiken, ga dan terug naar display 3 en plaats een nieuw obstakel
+        // Als we display 0 bereiken, ga dan terug naar display 3 en genereer een nieuw obstakel
         if (display == 0) {
             display = 3; // Terug naar display 3
 
@@ -117,7 +116,6 @@ void obstakels() {
         }
     }
 }
-
 
 
 
@@ -137,9 +135,9 @@ int main(void) {
     printf("Gebruik button 1 om de flappy bird langs de obstakels te laten vliegen\n");
 
     while (1) {
-
-        obstakels(); // Genereer obstakels
+        updateGame();
     }
 
     return 0;
 }
+

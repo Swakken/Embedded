@@ -75,30 +75,44 @@ int kiesLevel() {
 
 
 // Functie om een willekeurig segment te kiezen uit de obstakelPositions array
-int kiesSegment() {
+int kiesObstakelSegment() {
     int index = rand() % (sizeof(obstakelPositions) / sizeof(obstakelPositions[0]));
     return obstakelPositions[index];
 }
 
 
-
 // Functie om de flappy bird en obstakels op het display te tonen
 void updateGame() {
     int birdPosition = birdPositions[birdPositionIndex]; // Haal de huidige positie van de flappy bird op
-    int segment = kiesSegment(); // Kies een willekeurig segment voor het obstakel
+    int segment = kiesObstakelSegment(); // Kies een willekeurig segment voor het obstakel
 
     int display = 3; // Start op display 3
 
+    // Variabele om bij te houden of de knop was ingedrukt in de vorige iteratie
+    int buttonPressed = 0;
+
     while (1) {
+        // Controleer of de eerste knop is ingedrukt om de flappy bird omhoog te laten vliegen
+        if (buttonPushed(PC1) && !buttonPressed) {
+            // Verhoog de birdPosition alleen als deze nog niet het hoogste segment heeft bereikt
+            if (birdPositionIndex < sizeof(birdPositions) / sizeof(birdPositions[0]) - 1) {
+                birdPositionIndex++;
+                birdPosition = birdPositions[birdPositionIndex];
+            }
+            buttonPressed = 1; // Markeer dat de knop is ingedrukt
+        } else {
+            buttonPressed = 0; // Markeer dat de knop niet is ingedrukt
+        }
+
         // Plaats de flappy bird op de huidige positie
         drawLine(0, birdPosition);
 
-        _delay_ms(500); // Vertraag elke stap met 1000 milliseconden
+        _delay_ms(500); // Vertraag elke stap met 500 milliseconden
 
         // Plaats het obstakel op hetzelfde segment van het huidige display
         drawLine(display, segment);
 
-        _delay_ms(1000); // Vertraag elke stap met 3000 milliseconden
+        _delay_ms(1000); // Vertraag elke stap met 1000 milliseconden
 
         // Verwijder zowel de flappy bird als het obstakel van het display
         clearDisplay(0);
@@ -112,7 +126,7 @@ void updateGame() {
             display = 3; // Terug naar display 3
 
             // Kies een nieuw willekeurig segment voor het nieuwe obstakel
-            segment = kiesSegment();
+            segment = kiesObstakelSegment();
         }
     }
 }

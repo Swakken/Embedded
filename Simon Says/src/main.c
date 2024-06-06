@@ -24,12 +24,14 @@
 volatile int not_started = 1;
 volatile int game_over = 0;
 
+// Interrupt Service Routine voor de knop. Start het spel wanneer de knop wordt ingedrukt
 ISR(PCINT1_vect) {
     if (buttonPushed(BUTTON_PIN)) {
         not_started = 0;
     }
 }
 
+// Timer Interrupt Service Routine. Zet het spel op game over na de timer
 ISR(TIMER1_COMPA_vect) {
     game_over = 1;
 }
@@ -40,10 +42,12 @@ void initRandomGenerator() {
     srand(seedTellerLed4);
 }
 
+// Genereert een willekeurig getal tussen 0 en 2
 int getRandomNumber() {
     return rand() % 3;
 }
 
+// Genereert een puzzelpatroon van een bepaalde lengte
 void generatePuzzle(uint8_t puzzle[], int length) {
     static int currentLength = 0;
 
@@ -55,7 +59,7 @@ void generatePuzzle(uint8_t puzzle[], int length) {
     }
 }
 
-
+// Print het gegenereerde puzzelpatroon naar de console
 void printPuzzle(uint8_t puzzle[], int length) {
     printf("[");
     for (int i = 0; i < length; i++) {
@@ -67,6 +71,7 @@ void printPuzzle(uint8_t puzzle[], int length) {
     printf("]\n");
 }
 
+// Speelt het gegenereerde puzzelpatroon af door de LEDs te laten knipperen
 void playPuzzle(uint8_t puzzle[], int size) {
     for (uint8_t i = 0; i < size; i++) {
         lightUpLed(puzzle[i]);
@@ -76,6 +81,7 @@ void playPuzzle(uint8_t puzzle[], int size) {
     }
 }
 
+// Leest de invoer van de speler en vergelijkt deze met het puzzelpatroon
 uint8_t readInput(uint8_t puzzle[], int size) {
     int position = 0;
     game_over = 0;
@@ -99,10 +105,12 @@ uint8_t readInput(uint8_t puzzle[], int size) {
     }
 }
 
+// Schakelt de interrupt-functies in
 void enableInterrupts() {
     sei();
 }
 
+// Leest welke knop is ingedrukt en geeft de bijhorende waarde terug
 int readButton() {
     if (buttonPushed(BUTTON_PIN)) {
         _delay_ms(BUTTON_PRESS_DELAY);
@@ -123,6 +131,7 @@ int readButton() {
     return -1;
 }
 
+// Laat alle LEDs kort oplichten als een visueel effect
 void flashAllLeds() {
     for (int i = 0; i < LED_COUNT; i++) {
         lightUpLed(i);
@@ -133,7 +142,7 @@ void flashAllLeds() {
     }
 }
 
-
+// Beheert het spelverloop
 void startGame() {
     printf("Druk op knop1 om het spel te starten\n");
 

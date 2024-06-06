@@ -19,19 +19,6 @@ void initButton() {
     PORTC |= (1 << BUTTON_PIN) | (1 << BUTTON_VERHOOG) | (1 << BUTTON_VERLAAG);
 }
 
-
-
-// Moeten wij dit kunnen? 
-// Niet gezien in de les? 
-
-/*
-Op het einde van het spel toon je op de serial monitor het verloop van het spel (oa. wie nam tijdens welke beurt hoeveel lucifers en hoeveel bleven er toen nog over). 
-Je moet tijdens het spel dus wat spelinfo bijhouden in het geheugen. Verzorg zelf de allocatie van het geheugen mbv calloc en/of malloc.
-
-*/
-
-
-
 void zetDisplayUit() {
     for (int i = 0; i < 4; i++) {
         writeNumberToSegment(i, ' ');

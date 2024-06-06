@@ -30,12 +30,14 @@ const int birdPositions[] = {0, 3, 6};
 const int obstakelPositions[] = {0, 3, 6};
 
 
+// Verwijder de lijnen die nog zichtbaar zijn op de display
 void clearDisplay() {
     for (int i = 0; i < 4; i++) {
         drawLine(i, -1);
     }
 }
 
+// Toont random lijntjes op de display totdat de gebruiker op de button drukt om het spel te starten 
 void displayLightShow() {
     printf("Druk op een willekeurige button om het spel te starten.\n");
     
@@ -46,6 +48,7 @@ void displayLightShow() {
     _delay_ms(500);
 }
 
+// Laat de gebruiker een moeilijkheidsgraad kiezen voor het spel start
 int kiesLevel() {
     int potValue;
 
@@ -66,6 +69,7 @@ int kiesLevel() {
     return level;
     _delay_ms(500);
 }
+
 
 
 // Functie om een willekeurig segment te kiezen uit de obstakelPositions array

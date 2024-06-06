@@ -30,37 +30,34 @@ int burst = 0;
 uint32_t teller = 0;
 int win = 0; // Als je gewonnen bent
 
-
+// Interrupt Service Routine voor button interrupt
 ISR(PCINT1_vect){
-  // interrupt voor onze button
+  // Checkt of de button is ingedrukt en of er nog brandstof is
   if (buttonPushed(1) && fuelReserve > 0){
     burst++;
     printf("\n::: BURST ++ :::\n");
-    if (burst <= 50) burst = 50;
+    if (burst <= 50) burst = 50; // Verhoog burst met 50
     } else {
-      burst = 0;
+      burst = 0; // Reset burst als de button niet is ingedrukt of geen brandstof meer heeft
     }
 }
 
+// Toont parameters zoals brandstof en hoogte op het display
 void showParameters() {
-    // Leds aansturen voor brandstof
-    showLeds();
-    // Led display toont hoogte in meter
-    writeNumber(distance);
+    showLeds(); // Update LED's voor brandstof
+    writeNumber(distance); // Toont hoogte in meters op display
 
 }
 
-// Gegevens worden gedeeld in de seriële terminal
+// Toont parameters zoals afstand, snelheid en brandstof op de seriële terminal
 void showParametersOnSerial() {
     printf("Afstand: %d m\n", distance);
     printf("Snelheid: %d m/s\n", currentSpeed);
     printf("Brandstof: %d liter\n\n", fuelReserve);
 }
 
-
+// Verhoogt burst als button 2 is ingedrukt en er nog brandstof is
 void updateBurst() {
-    // Als je op de button drukt, verhoogt de burst
-    // Burst != 50 liter per seconde
   if (buttonPushed(2) && fuelReserve > 0) {
     burst++;
     if (burst >= 50) burst = 50;
@@ -69,13 +66,14 @@ void updateBurst() {
   }
 }
 
+// Update de parameters zoals snelheid, afstand en brandstofverbruik
 void updateParameters() {
     currentSpeed += gravity - burst / 5;
     distance -= currentSpeed;
     fuelReserve -= burst;
 }
 
-
+// Update de display en controleer de afstand
 void updateDisplay() {
     if (distance <= 0) {
         safe = 0; 
@@ -89,6 +87,7 @@ void updateDisplay() {
     }
 }
 
+// Update de Led's op basis van de brandstof
 void showLeds() {
     
     if (fuelReserve == 1500) {
@@ -118,7 +117,6 @@ void showLeds() {
 }
 
 void checkWin() {
-    
     // Als we winnen
     if (distance <= 3 && currentSpeed <= 5) {
         safe = 0;

@@ -48,7 +48,7 @@ void displayLightShow() {
     _delay_ms(500);
 }
 
-// Laat de gebruiker een moeilijkheidsgraad kiezen voor het spel start
+// Laat de gebruiker een moeilijkheidsgraad kiezen voor dat het spel start
 int kiesLevel() {
     int potValue;
 
@@ -70,14 +70,11 @@ int kiesLevel() {
     _delay_ms(500);
 }
 
-
-
 // Functie om een willekeurig segment te kiezen uit de obstakelPositions array
 int kiesObstakelSegment() {
     int index = rand() % (sizeof(obstakelPositions) / sizeof(obstakelPositions[0]));
     return obstakelPositions[index];
 }
-
 
 // Functie om de flappy bird en obstakels op het display te tonen
 void updateGame() {
@@ -104,12 +101,10 @@ void updateGame() {
 
         // Plaats de flappy bird op de huidige positie
         drawLine(0, birdPosition);
-
         _delay_ms(500); // Vertraag elke stap met 500 milliseconden
 
         // Plaats het obstakel op hetzelfde segment van het huidige display
         drawLine(display, segment);
-
         _delay_ms(1000); // Vertraag elke stap met 1000 milliseconden
 
         // Verwijder zowel de flappy bird als het obstakel van het display
@@ -129,8 +124,6 @@ void updateGame() {
     }
 }
 
-
-
 int main(void) {
     initUSART();
     enableAllLeds();
@@ -139,7 +132,7 @@ int main(void) {
     startPotentiometer();
     initDisplay();
 
-    // displayLightShow(); // Toon de lichtshow en wacht op knopdruk om te starten
+    displayLightShow(); // Toon de lichtshow en wacht op knopdruk om te starten
 
     // Voeg hier de functieaanroep toe om het niveau te kiezen
     int chosenLevel = kiesLevel();  // Laat de speler het niveau kiezen na de lichtshow

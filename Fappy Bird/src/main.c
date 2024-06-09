@@ -162,6 +162,9 @@ ISR(PCINT1_vect) {
     }
 }
 
+
+
+
 void initTimer1() {
     TCCR1B |= (1 << WGM12);
     TIMSK1 |= (1 << OCIE1A);

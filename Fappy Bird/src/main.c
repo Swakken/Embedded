@@ -115,9 +115,7 @@ void updateGame() {
             // Clear de obstakel lijn maar laat de vogelpositie staan
             drawLine(display, -1);
 
-            display--;
-
-            if (display == 0) {
+            if (display == 1) {
                 if (birdPositions[birdPositionIndex] == segment) {
                     lives--;
                     printf("Oeps! Je hebt een obstakel geraakt. Levens over: %d\n", lives);
@@ -128,8 +126,11 @@ void updateGame() {
                         printf("Blijf doorgaan! Levens over: %d\n", lives);
                     }
                 }
+            }
 
-                // Verplaats de obstakels terug naar display 3
+            display--;
+
+            if (display == 0) {
                 display = 3;
                 segment = kiesObstakelSegment();
             }
@@ -182,12 +183,12 @@ int main(void) {
 
     initTimer1();
 
-    displayLightShow();
-    level = kiesLevel();
-
-    printf("Gebruik button 1 om de flappy bird omhoog te laten vliegen, button 2 om te pauzeren.\n");
-
     while (1) {
+        displayLightShow();
+        level = kiesLevel();
+
+        printf("Gebruik button 1 om de flappy bird omhoog te laten vliegen, button 2 om te pauzeren.\n");
+        
         updateGame();
     }
 

@@ -22,17 +22,20 @@
 
 int level = 1;
 volatile int birdPositionIndex = 1; // Start altijd in het midden
+volatile int gamePaused = 0;
+volatile int lives = 3;
+volatile int timer = 0;
 
 // 0 komt overeen met 0xFE voor het bovenste segment
 // 6 komt overeen met 0xBF voor het middelste segment
 // 3 komt overeen met voor het laagste segment
-const int birdPositions[] = {0, 3, 6};
-const int obstakelPositions[] = {0, 3, 6};
+const int birdPositions[] = {0, 6, 3};
+const int obstakelPositions[] = {0, 6, 3};
 
 
 // Verwijder de lijnen die nog zichtbaar zijn op de display
 void clearDisplay() {
-    for (int i = 0; i < 4; i++) {
+    for (int i = 1; i < 4; i++) {
         drawLine(i, -1);
     }
 }
@@ -41,7 +44,7 @@ void clearDisplay() {
 void displayLightShow() {
     printf("Druk op een willekeurige button om het spel te starten.\n");
     
-    while (!(buttonPushed(PC1) || buttonPushed(PC2) || buttonPushed(PC3))) {
+    while (!(buttonPushed(BUTTON_PIN0) || buttonPushed(BUTTON_PIN1) || buttonPushed(BUTTON_PIN2))) {
         drawLine(rand() % 4, rand() % 7);
         _delay_ms(100);
     }
@@ -54,7 +57,7 @@ int kiesLevel() {
 
     printf("Draai aan de potentiometer om het niveau te kiezen.\n");
 
-    while (!(buttonPushed(PC1) || buttonPushed(PC2) || buttonPushed(PC3))) {
+    while (!(buttonPushed(BUTTON_PIN0) || buttonPushed(BUTTON_PIN1) || buttonPushed(BUTTON_PIN2))) {
         potValue = readPotentiometer();
 
         level = (potValue / 102) + 1;
@@ -76,52 +79,93 @@ int kiesObstakelSegment() {
     return obstakelPositions[index];
 }
 
-// Functie om de flappy bird en obstakels op het display te tonen
+
+// Eindig het spel en reset
+void gameOver() {
+    printf("Game Over!\n");
+    lives = 3;
+    birdPositionIndex = 1;
+    displayLightShow();
+    level = kiesLevel();
+}
+
+
 void updateGame() {
-    int birdPosition = birdPositions[birdPositionIndex]; // Haal de huidige positie van de flappy bird op
-    int segment = kiesObstakelSegment(); // Kies een willekeurig segment voor het obstakel
+    int segment = kiesObstakelSegment();
+    int display = 3;
 
-    int display = 3; // Start op display 3
+    while (lives > 0) {
+        if (!gamePaused) {
+            int birdPosition = birdPositions[birdPositionIndex];
 
-    // Variabele om bij te houden of de knop was ingedrukt in de vorige iteratie
-    int buttonPressed = 0;
+            // Zorg ervoor dat de vogelpositie blijft staan
+            drawLine(0, birdPosition);
 
-    while (1) {
-        // Controleer of de eerste knop is ingedrukt om de flappy bird omhoog te laten vliegen
-        if (buttonPushed(PC1) && !buttonPressed) {
-            // Verhoog de birdPosition alleen als deze nog niet het hoogste segment heeft bereikt
-            if (birdPositionIndex < sizeof(birdPositions) / sizeof(birdPositions[0]) - 1) {
-                birdPositionIndex++;
-                birdPosition = birdPositions[birdPositionIndex];
+            // Voeg hier een delay toe zodat het obstakel eerder wordt getoond
+            for (int i = 0; i < (10 - level) * 50; i++) {
+                _delay_ms(1);
             }
-            buttonPressed = 1; // Markeer dat de knop is ingedrukt
-        } else {
-            buttonPressed = 0; // Markeer dat de knop niet is ingedrukt
-        }
 
-        // Plaats de flappy bird op de huidige positie
-        drawLine(0, birdPosition);
-        _delay_ms(500); // Vertraag elke stap met 500 milliseconden
+            drawLine(display, segment);
 
-        // Plaats het obstakel op hetzelfde segment van het huidige display
-        drawLine(display, segment);
-        _delay_ms(1000); // Vertraag elke stap met 1000 milliseconden
+            for (int i = 0; i < (10 - level) * 100; i++) {
+                _delay_ms(1);
+            }
 
-        // Verwijder zowel de flappy bird als het obstakel van het display
-        clearDisplay(0);
-        clearDisplay(display);
+            // Clear de obstakel lijn maar laat de vogelpositie staan
+            drawLine(display, -1);
 
-        // Ga naar het volgende display
-        display--;
+            display--;
 
-        // Als we display 0 bereiken, ga dan terug naar display 3 en genereer een nieuw obstakel
-        if (display == 0) {
-            display = 3; // Terug naar display 3
+            if (display == 0) {
+                if (birdPositions[birdPositionIndex] == segment) {
+                    lives--;
+                    printf("Oeps! Je hebt een obstakel geraakt. Levens over: %d\n", lives);
+                    if (lives == 0) {
+                        gameOver();
+                        return;
+                    } else {
+                        printf("Blijf doorgaan! Levens over: %d\n", lives);
+                    }
+                }
 
-            // Kies een nieuw willekeurig segment voor het nieuwe obstakel
-            segment = kiesObstakelSegment();
+                // Verplaats de obstakels terug naar display 3
+                display = 3;
+                segment = kiesObstakelSegment();
+            }
         }
     }
+}
+
+
+ISR(TIMER1_COMPA_vect) {
+    if (!gamePaused) {
+        timer++;
+        if (timer >= (10 - level)) {
+            if (birdPositionIndex < 2) { // Verplaats de vogel naar beneden als hij al niet op het laagste segment staat
+                birdPositionIndex++;
+            }
+            timer = 0;
+        }
+    }
+}
+
+ISR(PCINT1_vect) {
+    if (buttonPushed(BUTTON_PIN0)) {
+        // Vogel omhoog, als hij nog niet boven is
+        if (birdPositionIndex > 0) {
+            birdPositionIndex--;
+        }
+    } else if (buttonPushed(BUTTON_PIN1)) {
+        gamePaused = !gamePaused;
+    }
+}
+
+void initTimer1() {
+    TCCR1B |= (1 << WGM12);
+    TIMSK1 |= (1 << OCIE1A);
+    OCR1A = 15624;
+    TCCR1B |= (1 << CS12) | (1 << CS10);
 }
 
 int main(void) {
@@ -132,12 +176,16 @@ int main(void) {
     startPotentiometer();
     initDisplay();
 
-    displayLightShow(); // Toon de lichtshow en wacht op knopdruk om te starten
+    PCICR |= (1 << PCIE1);
+    PCMSK1 |= (1 << BUTTON_PIN0) | (1 << BUTTON_PIN1);
+    sei();
 
-    // Voeg hier de functieaanroep toe om het niveau te kiezen
-    int chosenLevel = kiesLevel();  // Laat de speler het niveau kiezen na de lichtshow
+    initTimer1();
 
-    printf("Gebruik button 1 om de flappy bird langs de obstakels te laten vliegen\n");
+    displayLightShow();
+    level = kiesLevel();
+
+    printf("Gebruik button 1 om de flappy bird omhoog te laten vliegen, button 2 om te pauzeren.\n");
 
     while (1) {
         updateGame();
@@ -145,4 +193,3 @@ int main(void) {
 
     return 0;
 }
-
